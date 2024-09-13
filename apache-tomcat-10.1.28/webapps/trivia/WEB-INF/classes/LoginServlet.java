@@ -1,5 +1,5 @@
-import jakarta.servlet.http.*;
 import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.sql.*;
 import java.io.*;
 public class LoginServlet extends HttpServlet {
@@ -23,11 +23,24 @@ public class LoginServlet extends HttpServlet {
          try { Class.forName("oracle.jdbc.OracleDriver"); } catch (Exception ex) { }
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
-         ResultSet rs = stmt2.executeQuery("select * from accounts");
+         ResultSet rs = stmt2.executeQuery("select * from users");
          while (rs.next()) {
             String username = rs.getString("username");
             String password = rs.getString("password");
-            System.out.println("   " + username + "  " + password); 
+
+            String user = request.getParameter("username");
+            String pass = request.getParameter("password");
+
+            if(user.equals(username)){
+               if(pass.equals(password)){
+                  response.sendRedirect("/home");
+               } else {
+                  continue;
+               }
+            } else {
+               continue;
+            }
+            response.sendRedirect("/signup");
 	 }
          stmt2.close();
          con.close();

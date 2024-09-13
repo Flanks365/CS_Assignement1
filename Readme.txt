@@ -23,7 +23,7 @@ Table creation script:
 CREATE TABLE users(
 "uid" RAW(16) NOT NULL, 
 "username" VARCHAR2(36), 
-"password" VARCHAR2(36),
+"password" VARCHAR2(100),
 "admin/user" VARCHAR2(36), 
 PRIMARY KEY ("uid")
 );

@@ -3,6 +3,7 @@ import jakarta.servlet.*;
 import java.sql.*;
 import java.util.UUID;
 import java.io.*;
+import BCrypt.*;
 
 public class SignupServlet extends HttpServlet {
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -32,16 +33,14 @@ public class SignupServlet extends HttpServlet {
          Statement stmt2 = con.createStatement();
          ResultSet rs = stmt2.executeQuery("select * from users where \"username\" = '" + request.getParameter("user_id") + "'");
          if (rs.next()) {
-            String username = rs.getString("username");
-            String password = rs.getString("password");
             errorFlag = true;
          } else {
             UUID uuid = UUID.randomUUID();
             String uuidAsString = uuid.toString().replace("-", "");
             Statement insertStatement = con.createStatement();
+            String hashedPassword = BCrypt.hashpw(request.getParameter("password"), BCrypt.gensalt(10));
             String query = "insert into users values ('" + uuidAsString + "','" + request.getParameter("user_id")
-                  + "','" +
-                  request.getParameter("password") + "', 'user')";
+                  + "','" + hashedPassword + "', 'user')";
             System.out.println(query);
             insertStatement.executeUpdate(query);
             insertStatement.close();

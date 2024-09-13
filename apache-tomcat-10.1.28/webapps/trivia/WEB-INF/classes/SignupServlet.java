@@ -30,14 +30,12 @@ public class SignupServlet extends HttpServlet {
          }
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
-         ResultSet rs = stmt2.executeQuery("select * from users");
+         ResultSet rs = stmt2.executeQuery("select * from users where \"username\" = '" + request.getParameter("user_id") + "'");
          if (rs.next()) {
             String username = rs.getString("username");
             String password = rs.getString("password");
-            System.out.println("Sorry" + username + "already exists");
             errorFlag = true;
          } else {
-            System.out.println("Creating new user");
             UUID uuid = UUID.randomUUID();
             String uuidAsString = uuid.toString().replace("-", "");
             Statement insertStatement = con.createStatement();

@@ -79,6 +79,5 @@ public class SignupServlet extends HttpServlet {
          response.setStatus(302);
          response.sendRedirect("main");
       }
-
    }
 }

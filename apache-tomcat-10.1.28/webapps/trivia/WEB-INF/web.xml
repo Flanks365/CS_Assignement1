@@ -5,6 +5,21 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+
+
+  <servlet>
+    <servlet-name>Quiz</servlet-name>
+    <servlet-class>Quiz</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>Quiz</servlet-name>
+    <url-pattern>/Quiz</url-pattern>
+  </servlet-mapping>
+
+
+
+
   <servlet>
     <servlet-name>upload</servlet-name>
     <servlet-class>FileUploadServlet</servlet-class>
@@ -19,11 +34,14 @@
     <servlet-name>signup</servlet-name>
     <servlet-class>SignupServlet</servlet-class>
   </servlet>
+
   
   <servlet-mapping>
     <servlet-name>signup</servlet-name>
     <url-pattern>/signup</url-pattern>
   </servlet-mapping>
+
+
 
   <servlet>
     <servlet-name>login</servlet-name>

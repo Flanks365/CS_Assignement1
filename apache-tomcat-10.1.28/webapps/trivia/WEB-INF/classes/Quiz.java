@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MainServlet extends HttpServlet {
+public class Quiz extends HttpServlet {
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
@@ -15,12 +15,12 @@ public class MainServlet extends HttpServlet {
 			response.setStatus(302);
 			response.sendRedirect("login");
 		}
-		String title = "Logged in as the user: ";
+		String title = "Logged in as: user";
 		title += session.getAttribute("USER_ID");
 		response.setContentType("text/html");
 		String docType = "<!doctype html public \"-//w3c//dtd html 4.0 " + "transitional//en\">\n";
 
-		//just do play quiz button at first and have an if statement that checks if admin
+		//just do main quiz button at first and have an if statement that checks if admin
 		//if admin == true, load the other buttons as well
 
 		String html = docType + "<html>\n" + "<head><title>" + title + "</title></head>\n"

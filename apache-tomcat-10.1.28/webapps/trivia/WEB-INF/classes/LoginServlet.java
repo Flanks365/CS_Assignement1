@@ -1,5 +1,6 @@
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jarkata.*;.servlet.*;
+import jarkata.*;.servlet.http.*;
+import BCrypt.*
 import java.sql.*;
 import java.io.*;
 public class LoginServlet extends HttpServlet {
@@ -8,7 +9,7 @@ public class LoginServlet extends HttpServlet {
       PrintWriter out = response.getWriter();
       out.println("<html>\n" + "<head><title>" + "Login" + "</title></head>\n" + "<body>\n"
 				+ "<h1 align=\"center\">" + "Login" + "</h1>\n" + "<form action=\"login\" method=\"POST\">\n"
-				+ "Username: <input type=\"text\" name=\"user_id\">\n" + "<br />\n"
+				+ "Username: <input type=\"text\" name=\"username\">\n" + "<br />\n"
 				+ "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
 				+ "<input type=\"submit\" value=\"Sign in\" />\n" + "</form>\n"
 				+ "</form>\n" + "</body>\n</html\n");
@@ -31,17 +32,18 @@ public class LoginServlet extends HttpServlet {
             String user = request.getParameter("username");
             String pass = request.getParameter("password");
 
-            if(user.equals(username)){
-               if(pass.equals(password)){
+            if(BCrypt.checkpw(user, username)){
+               if(BCrypt.checkpw(pass, password)){
                   response.sendRedirect("/home");
+                  break;
                } else {
                   continue;
                }
             } else {
                continue;
             }
-            response.sendRedirect("/signup");
 	 }
+         response.sendRedirect("/signup");
          stmt2.close();
          con.close();
          System.out.println("\n\n");

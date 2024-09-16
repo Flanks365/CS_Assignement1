@@ -24,26 +24,26 @@ public class LoginServlet extends HttpServlet {
          try { Class.forName("oracle.jdbc.OracleDriver"); } catch (Exception ex) { }
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
-         ResultSet rs = stmt2.executeQuery("select * from users");
+         String user = request.getParameter("username");
+         ResultSet rs = stmt2.executeQuery("select * from users WHERE \"username\" ='" + user + "'");
          while (rs.next()) {
-            String username = rs.getString("username");
             String password = rs.getString("password");
 
-            String user = request.getParameter("username");
             String pass = request.getParameter("password");
 
-            if(BCrypt.checkpw(user, username)){
+            
                if(BCrypt.checkpw(pass, password)){
+                  HttpSession session = request.getSession(true);
+		            session.setAttribute("USER_ID", user);
+		            response.setStatus(302);
                   response.sendRedirect("/home");
                   break;
                } else {
-                  continue;
+                  response.sendRedirect("/login");
+                  break;
                }
-            } else {
-               continue;
-            }
+  
 	 }
-         response.sendRedirect("/signup");
          stmt2.close();
          con.close();
          System.out.println("\n\n");
@@ -56,6 +56,7 @@ public class LoginServlet extends HttpServlet {
             ex = ex.getNextException(); 
             errMsg += "";
          } 
+         response.sendRedirect("/signup");
       } 
     PrintWriter out = response.getWriter();
       response.setContentType("text/html");
@@ -64,9 +65,7 @@ public class LoginServlet extends HttpServlet {
 		String title = "Logged in as: ";
 		String username = request.getParameter("user_id");
 		String password = request.getParameter("password");
-		HttpSession session = request.getSession(true);
-		session.setAttribute("USER_ID", username);
-		response.setStatus(302);
-		response.sendRedirect("main");		
+		
+		
 	}
 }

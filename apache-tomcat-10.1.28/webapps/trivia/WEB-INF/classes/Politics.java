@@ -1,7 +1,11 @@
-import jakarta.servlet.http.*; 
+import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.*;
+import java.sql.*;
+
 public class Politics extends HttpServlet {
+
+    private int currentQuestionIndex = 0; // Track the current question index
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -11,117 +15,119 @@ public class Politics extends HttpServlet {
             response.sendRedirect("login");
             return; // Ensure no further processing occurs after redirection
         }
-        
+
+        // Get the current question index from the request (if available)
+        String indexParam = request.getParameter("currentQuestionIndex");
+        if (indexParam != null) {
+            currentQuestionIndex = Integer.parseInt(indexParam);
+        }
+
         String title = "50’s Politics Quiz";
         response.setContentType("text/html");
-        
-        String html = "<!DOCTYPE html>\n" +
-                      "<html lang=\"en\">\n" +
-                      "<head>\n" +
-                      "    <meta charset=\"UTF-8\">\n" +
-                      "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                      "    <title>" + title + "</title>\n" +
-                      "    <link rel=\"stylesheet\" href=\"styles.css\">\n" +
-                      "</head>\n" +
-                      "<body>\n" +
-                      "    <header>\n" +
-                      "        <h1>" + title + "</h1>\n" +
-                      "        <p>Test your knowledge of the political landscape of the 1950s!</p>\n" +
-                      "    </header>\n" +
-                      "    <main class=\"quiz-container\">\n" +
-                      "        <div id=\"quiz-content\">\n" +
-                      "            <h2 id=\"question-text\">Loading question...</h2>\n" +
-                      "            <img id=\"question-media\" src=\"\" alt=\"\" style=\"display:none; width:300px;height:auto;\"/>\n" +
-                      "            <audio id=\"question-audio\" controls style=\"display:none;\"></audio>\n" +
-                      "            <div class=\"answers\">\n" +
-                      "                <button onclick=\"selectAnswer(0)\">Answer 1</button>\n" +
-                      "                <button onclick=\"selectAnswer(1)\">Answer 2</button>\n" +
-                      "                <button onclick=\"selectAnswer(2)\">Answer 3</button>\n" +
-                      "                <button onclick=\"selectAnswer(3)\">Answer 4</button>\n" +
-                      "            </div>\n" +
-                      "        </div>\n" +
-                      "    </main>\n" +
-                      "    <script>\n" +
-                      "        // Question Data\n" +
-                      "        const quizQuestions = [\n" +
-                      "            {\n" +
-                      "                question: \"Who was the President of the United States during the start of the 1950s?\",\n" +
-                      "                answers: [\"Harry S. Truman\", \"Dwight D. Eisenhower\", \"John F. Kennedy\", \"Lyndon B. Johnson\"],\n" +
-                      "                correctAnswer: 0,\n" +
-                      "                mediaType: \"image\",\n" +
-                      "                mediaSrc: \"images/harry-truman.jpg\"\n" +
-                      "            },\n" +
-                      "            {\n" +
-                      "                question: \"Which U.S. senator led the infamous anti-communist 'Red Scare' hearings?\",\n" +
-                      "                answers: [\"Robert Taft\", \"Joseph McCarthy\", \"Richard Nixon\", \"Hubert Humphrey\"],\n" +
-                      "                correctAnswer: 1,\n" +
-                      "                mediaType: \"image\",\n" +
-                      "                mediaSrc: \"images/joseph-mccarthy.jpg\"\n" +
-                      "            },\n" +
-                      "            {\n" +
-                      "                question: \"In which year did Dwight D. Eisenhower become President?\",\n" +
-                      "                answers: [\"1948\", \"1953\", \"1957\", \"1961\"],\n" +
-                      "                correctAnswer: 1,\n" +
-                      "                mediaType: \"audio\",\n" +
-                      "                mediaSrc: \"audio/eisenhower-speech.mp3\"\n" +
-                      "            }\n" +
-                      "        ];\n" +
-                      "\n" +
-                      "        let currentQuestionIndex = 0;\n" +
-                      "\n" +
-                      "        // Function to load a question\n" +
-                      "        function loadQuestion() {\n" +
-                      "            const questionObj = quizQuestions[currentQuestionIndex];\n" +
-                      "            document.getElementById('question-text').textContent = questionObj.question;\n" +
-                      "\n" +
-                      "            // Load media\n" +
-                      "            const imageElement = document.getElementById('question-media');\n" +
-                      "            const audioElement = document.getElementById('question-audio');\n" +
-                      "            if (questionObj.mediaType === 'image') {\n" +
-                      "                imageElement.src = questionObj.mediaSrc;\n" +
-                      "                imageElement.style.display = 'block';\n" +
-                      "                audioElement.style.display = 'none';\n" +
-                      "            } else if (questionObj.mediaType === 'audio') {\n" +
-                      "                audioElement.src = questionObj.mediaSrc;\n" +
-                      "                audioElement.style.display = 'block';\n" +
-                      "                audioElement.play();\n" +
-                      "                imageElement.style.display = 'none';\n" +
-                      "            }\n" +
-                      "\n" +
-                      "            // Load answers\n" +
-                      "            const buttons = document.querySelectorAll('.answers button');\n" +
-                      "            buttons.forEach((button, index) => {\n" +
-                      "                button.textContent = questionObj.answers[index];\n" +
-                      "                button.disabled = false; // Enable the buttons\n" +
-                      "            });\n" +
-                      "        }\n" +
-                      "\n" +
-                      "        // Function to handle answer selection\n" +
-                      "        function selectAnswer(selectedIndex) {\n" +
-                      "            const questionObj = quizQuestions[currentQuestionIndex];\n" +
-                      "\n" +
-                      "            if (selectedIndex === questionObj.correctAnswer) {\n" +
-                      "                alert('Correct! Moving to the next question.');\n" +
-                      "                currentQuestionIndex++;\n" +
-                      "                \n" +
-                      "                if (currentQuestionIndex < quizQuestions.length) {\n" +
-                      "                    loadQuestion(); // Load next question\n" +
-                      "                } else {\n" +
-                      "                    alert('Quiz complete! Well done!');\n" +
-                      "                    // You can reset or redirect to a results page here\n" +
-                      "                }\n" +
-                      "            } else {\n" +
-                      "                alert('Incorrect, try again.');\n" +
-                      "            }\n" +
-                      "        }\n" +
-                      "\n" +
-                      "        // Load the first question when the page loads\n" +
-                      "        window.onload = loadQuestion;\n" +
-                      "    </script>\n" +
-                      "</body>\n" +
-                      "</html>";
 
+        // Retrieve questions and answers from the database
+        StringBuilder questionHtml = new StringBuilder();
+        Connection con = null;
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
+
+            // Retrieve the current question
+            PreparedStatement questionStmt = con.prepareStatement(
+                "SELECT * FROM questions WHERE category_id = 2 AND ROWNUM = ?"
+            );
+            questionStmt.setInt(1, currentQuestionIndex + 1);
+            ResultSet questionRs = questionStmt.executeQuery();
+
+            if (questionRs.next()) {
+                int questionId = questionRs.getInt("id");
+                String questionText = questionRs.getString("question_text");
+
+                questionHtml.append("<div class='question'>")
+                        .append("<h3>").append(questionText).append("</h3>")
+                        .append("<div class='answers'>");
+
+                // Retrieve answers for the current question
+                PreparedStatement answersStmt = con.prepareStatement("SELECT * FROM answers WHERE question_id = ?");
+                answersStmt.setInt(1, questionId);
+                ResultSet answersRs = answersStmt.executeQuery();
+
+                while (answersRs.next()) {
+                    String answerText = answersRs.getString("answer_text");
+                    int answerId = answersRs.getInt("id");
+                    questionHtml.append("<button onclick='selectAnswer(").append(answerId).append(", ").append(questionId).append(")'>")
+                                .append(answerText).append("</button>");
+                }
+
+                questionHtml.append("</div></div>"); // Close the question and answers divs
+
+                // Close the answers ResultSet and statement
+                answersRs.close();
+                answersStmt.close();
+            } else {
+                questionHtml.append("<p>No more questions available.</p>");
+            }
+
+            questionRs.close();
+            questionStmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // Final HTML output
         PrintWriter out = response.getWriter();
-        out.println(html);
+        out.println("<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>" + title + "</title>\n" +
+                "    <link rel=\"stylesheet\" href=\"styles.css\">\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <header>\n" +
+                "        <h1>" + title + "</h1>\n" +
+                "        <p>Test your knowledge of the political landscape of the 1950s!</p>\n" +
+                "    </header>\n" +
+                "    <main class=\"quiz-container\">\n" +
+                "        <div id=\"quiz-content\">\n" +
+                questionHtml.toString() +
+                "        </div>\n" +
+                "    </main>\n" +
+                "    <script>\n" +
+                "        function selectAnswer(answerId, questionId) {\n" +
+                "            fetch('getCorrectAnswer?questionId=' + questionId)\n" +
+                "                .then(response => response.json())\n" +
+                "                .then(data => {\n" +
+                "                    const correctAnswerId = data.correctAnswerId;\n" +
+                "                    if (answerId === correctAnswerId) {\n" +
+                "                        alert('Correct! Moving to the next question.');\n" +
+                "                        window.location.href = 'politics?currentQuestionIndex=' + (currentQuestionIndex + 1);\n" +
+                "                    } else {\n" +
+                "                        alert('Incorrect, try again.');\n" +
+                "                    }\n" +
+                "                });\n" +
+                "        }\n" +
+                "    </script>\n" +
+                "</body>\n" +
+                "</html>");
+    }
+
+    private int getCorrectAnswerId(int questionId, Connection con) throws SQLException {
+        PreparedStatement stmt = con.prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'T'");
+        stmt.setInt(1, questionId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("id");
+        }
+        return -1; // No correct answer found
     }
 }

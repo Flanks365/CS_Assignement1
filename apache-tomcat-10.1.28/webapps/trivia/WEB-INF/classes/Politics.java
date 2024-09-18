@@ -30,9 +30,9 @@ public class Politics extends HttpServlet {
 
             // Retrieve the current question
             PreparedStatement questionStmt = con.prepareStatement(
-                "SELECT * FROM questions WHERE category_id = 2 AND ROWNUM = ?"
+                "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = 2) WHERE rnum = ?"
             );
-            questionStmt.setInt(1, currentQuestionIndex + 1);
+            questionStmt.setInt(1, currentQuestionIndex + 1); // Adjust for the 1-based index
             ResultSet questionRs = questionStmt.executeQuery();
 
             if (questionRs.next()) {
@@ -61,7 +61,7 @@ public class Politics extends HttpServlet {
                 answersRs.close();
                 answersStmt.close();
             } else {
-                questionHtml.append("<p>You've completed the quiz!.</p>");
+                questionHtml.append("<img src='https://images.slideplayer.com/20/5999287/slides/slide_30.jpg'>");
             }
 
             questionRs.close();
@@ -101,24 +101,16 @@ public class Politics extends HttpServlet {
                 "    <script>\n" +
                 "        function selectAnswer(answerId, questionId, currentIndex) {\n" +
                 "            fetch('getCorrectAnswer?questionId=' + questionId)\n" +
-                "                .then(response => {\n" +
-                "                    if (!response.ok) {\n" +
-                "                        throw new Error('Network response was not ok');\n" +
-                "                    }\n" +
-                "                    return response.json();\n" +
-                "                })\n" +
+                "                .then(response => response.json())\n" +
                 "                .then(data => {\n" +
                 "                    const correctAnswerId = data.correctAnswerId;\n" +
-                "                    console.log('Selected Answer ID:', answerId);\n" +
-                "                    console.log('Correct Answer ID:', correctAnswerId);\n" +
                 "                    if (answerId === correctAnswerId) {\n" +
                 "                        alert('Correct! Moving to the next question.');\n" +
                 "                        window.location.href = 'politics?currentQuestionIndex=' + (currentIndex + 1);\n" +
                 "                    } else {\n" +
                 "                        alert('Incorrect, try again.');\n" +
                 "                    }\n" +
-                "                })\n" +
-                "                .catch(error => console.error('Error fetching correct answer:', error));\n" +
+                "                });\n" +
                 "        }\n" +
                 "    </script>\n" +
                 "</body>\n" +

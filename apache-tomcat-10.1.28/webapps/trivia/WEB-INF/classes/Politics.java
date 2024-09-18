@@ -5,8 +5,6 @@ import java.sql.*;
 
 public class Politics extends HttpServlet {
 
-    private int currentQuestionIndex = 0; // Track the current question index
-
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
 
@@ -18,9 +16,7 @@ public class Politics extends HttpServlet {
 
         // Get the current question index from the request (if available)
         String indexParam = request.getParameter("currentQuestionIndex");
-        if (indexParam != null) {
-            currentQuestionIndex = Integer.parseInt(indexParam);
-        }
+        int currentQuestionIndex = (indexParam != null) ? Integer.parseInt(indexParam) : 0;
 
         String title = "50’s Politics Quiz";
         response.setContentType("text/html");
@@ -55,7 +51,7 @@ public class Politics extends HttpServlet {
                 while (answersRs.next()) {
                     String answerText = answersRs.getString("answer_text");
                     int answerId = answersRs.getInt("id");
-                    questionHtml.append("<button onclick='selectAnswer(").append(answerId).append(", ").append(questionId).append(")'>")
+                    questionHtml.append("<button onclick='selectAnswer(").append(answerId).append(", ").append(questionId).append(", ").append(currentQuestionIndex).append(")'>")
                                 .append(answerText).append("</button>");
                 }
 
@@ -65,7 +61,7 @@ public class Politics extends HttpServlet {
                 answersRs.close();
                 answersStmt.close();
             } else {
-                questionHtml.append("<p>No more questions available.</p>");
+                questionHtml.append("<p>You've completed the quiz!.</p>");
             }
 
             questionRs.close();
@@ -103,18 +99,26 @@ public class Politics extends HttpServlet {
                 "        </div>\n" +
                 "    </main>\n" +
                 "    <script>\n" +
-                "        function selectAnswer(answerId, questionId) {\n" +
+                "        function selectAnswer(answerId, questionId, currentIndex) {\n" +
                 "            fetch('getCorrectAnswer?questionId=' + questionId)\n" +
-                "                .then(response => response.json())\n" +
+                "                .then(response => {\n" +
+                "                    if (!response.ok) {\n" +
+                "                        throw new Error('Network response was not ok');\n" +
+                "                    }\n" +
+                "                    return response.json();\n" +
+                "                })\n" +
                 "                .then(data => {\n" +
                 "                    const correctAnswerId = data.correctAnswerId;\n" +
+                "                    console.log('Selected Answer ID:', answerId);\n" +
+                "                    console.log('Correct Answer ID:', correctAnswerId);\n" +
                 "                    if (answerId === correctAnswerId) {\n" +
                 "                        alert('Correct! Moving to the next question.');\n" +
-                "                        window.location.href = 'politics?currentQuestionIndex=' + (currentQuestionIndex + 1);\n" +
+                "                        window.location.href = 'politics?currentQuestionIndex=' + (currentIndex + 1);\n" +
                 "                    } else {\n" +
                 "                        alert('Incorrect, try again.');\n" +
                 "                    }\n" +
-                "                });\n" +
+                "                })\n" +
+                "                .catch(error => console.error('Error fetching correct answer:', error));\n" +
                 "        }\n" +
                 "    </script>\n" +
                 "</body>\n" +

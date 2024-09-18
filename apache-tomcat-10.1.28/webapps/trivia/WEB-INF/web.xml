@@ -27,6 +27,16 @@
     <url-pattern>/politics</url-pattern>
   </servlet-mapping>
 
+<servlet>
+    <servlet-name>GetCorrectAnswerServlet</servlet-name>
+    <servlet-class>GetCorrectAnswerServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>GetCorrectAnswerServlet</servlet-name>
+    <url-pattern>/getCorrectAnswer</url-pattern>
+</servlet-mapping>
+
+
   <servlet>
     <servlet-name>editQuizzes</servlet-name>
     <servlet-class>EditQuizzesServlet</servlet-class>

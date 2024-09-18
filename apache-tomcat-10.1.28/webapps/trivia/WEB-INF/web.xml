@@ -17,6 +17,16 @@
     <url-pattern>/Quiz</url-pattern>
   </servlet-mapping>
 
+    <servlet>
+    <servlet-name>politics</servlet-name>
+    <servlet-class>Politics</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>politics</servlet-name>
+    <url-pattern>/politics</url-pattern>
+  </servlet-mapping>
+
   <servlet>
     <servlet-name>editQuizzes</servlet-name>
     <servlet-class>EditQuizzesServlet</servlet-class>

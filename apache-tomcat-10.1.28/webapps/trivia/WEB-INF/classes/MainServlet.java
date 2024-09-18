@@ -25,7 +25,11 @@ public class MainServlet extends HttpServlet {
 
 		String html = docType + "<html>\n" + "<head><title>" + title + "</title></head>\n"
 		+ "<body bgcolor=\"#f0f0f0\">\n" + "<h1 align=\"center\">" + title + "</h1>\n";
-		if (session.getAttribute("ROLE") == "admin") {
+
+		String role = (String) session.getAttribute("ROLE");
+
+		if (role.equals("admin")) {
+			System.out.println("in admin");
 			html += "<div style=\"text-align: center;\">\n" +
 			"<form action=\"upload\" method=\"GET\">\n" +
 			"<input type=\"submit\" value=\"UPLOAD\" />\n" +

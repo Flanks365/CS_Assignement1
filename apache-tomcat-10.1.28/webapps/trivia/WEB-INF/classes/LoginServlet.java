@@ -1,8 +1,9 @@
-import jarkata.*;.servlet.*;
-import jarkata.*;.servlet.http.*;
-import BCrypt.*
+import jakarta.servlet.http.*;
+import jakarta.servlet.*;
+import BCrypt.*;
 import java.sql.*;
 import java.io.*;
+
 public class LoginServlet extends HttpServlet {
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       response.setContentType("text/html");
@@ -27,6 +28,7 @@ public class LoginServlet extends HttpServlet {
          String user = request.getParameter("username");
          ResultSet rs = stmt2.executeQuery("select * from users WHERE \"username\" ='" + user + "'");
          while (rs.next()) {
+            String role = rs.getString("admin/user");
             String password = rs.getString("password");
 
             String pass = request.getParameter("password");
@@ -35,11 +37,12 @@ public class LoginServlet extends HttpServlet {
                if(BCrypt.checkpw(pass, password)){
                   HttpSession session = request.getSession(true);
 		            session.setAttribute("USER_ID", user);
+                  session.setAttribute("ROLE", role);
 		            response.setStatus(302);
-                  response.sendRedirect("/home");
+                  response.sendRedirect("/trivia/main");
                   break;
                } else {
-                  response.sendRedirect("/login");
+                  response.sendRedirect("/trivia/login");
                   break;
                }
   

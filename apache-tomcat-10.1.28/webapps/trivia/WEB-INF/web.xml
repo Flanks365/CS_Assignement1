@@ -18,8 +18,6 @@
   </servlet-mapping>
 
 
-
-
   <servlet>
     <servlet-name>upload</servlet-name>
     <servlet-class>FileUploadServlet</servlet-class>

@@ -15,7 +15,7 @@ public class MainServlet extends HttpServlet {
 			response.setStatus(302);
 			response.sendRedirect("login");
 		}
-		String title = "Logged in as the user: ";
+		String title = "Logged in as the user name: ";
 		title += session.getAttribute("USER_ID");
 		response.setContentType("text/html");
 		String docType = "<!doctype html public \"-//w3c//dtd html 4.0 " + "transitional//en\">\n";

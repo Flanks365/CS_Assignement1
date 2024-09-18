@@ -9,12 +9,12 @@ public class LoginServlet extends HttpServlet {
       response.setContentType("text/html");
       PrintWriter out = response.getWriter();
       out.println("<html>\n" + "<head><title>" + "Login" + "</title></head>\n" + "<body>\n"
-				+ "<h1 align=\"center\">" + "Login here" + "</h1>\n" + "<form action=\"login\" method=\"POST\">\n"
-				+ "Username: <input type=\"text\" name=\"username\">\n" + "<br />\n"
-				+ "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
-				+ "<input type=\"submit\" value=\"Sign in\" />\n" + "</form>\n"
-				+ "</form>\n" + "</body>\n</html\n");
-				
+            + "<h1 align=\"center\">" + "Login here" + "</h1>\n" + "<form action=\"login\" method=\"POST\">\n"
+            + "Username: <input type=\"text\" name=\"username\">\n" + "<br />\n"
+            + "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
+            + "<input type=\"submit\" value=\"Sign in\" />\n" + "</form>\n"
+            + "</form>\n" + "</body>\n</html\n");
+
    }
 
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -22,7 +22,10 @@ public class LoginServlet extends HttpServlet {
       String errMsg = "";
       Connection con = null;
       try {
-         try { Class.forName("oracle.jdbc.OracleDriver"); } catch (Exception ex) { }
+         try {
+            Class.forName("oracle.jdbc.OracleDriver");
+         } catch (Exception ex) {
+         }
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
          String user = request.getParameter("username");
@@ -33,42 +36,39 @@ public class LoginServlet extends HttpServlet {
 
             String pass = request.getParameter("password");
 
-            
-               if(BCrypt.checkpw(pass, password)){
-                  HttpSession session = request.getSession(true);
-		            session.setAttribute("USER_ID", user);
-                  session.setAttribute("ROLE", role);
-		            response.setStatus(302);
-                  response.sendRedirect("/trivia/main");
-                  break;
-               } else {
-                  response.sendRedirect("/trivia/login");
-                  break;
-               }
-  
-	 }
+            if (BCrypt.checkpw(pass, password)) {
+               HttpSession session = request.getSession(true);
+               session.setAttribute("USER_ID", user);
+               session.setAttribute("ROLE", role);
+               response.setStatus(302);
+               response.sendRedirect("/trivia/main");
+               break;
+            } else {
+               response.sendRedirect("/trivia/login");
+               break;
+            }
+
+         }
          stmt2.close();
          con.close();
          System.out.println("\n\n");
-      } catch(SQLException ex) { 
-         errMsg = errMsg + "\n--- SQLException caught ---\n"; 
-         while (ex != null) { 
-            errMsg += "Message: " + ex.getMessage (); 
-            errMsg += "SQLState: " + ex.getSQLState (); 
-            errMsg += "ErrorCode: " + ex.getErrorCode (); 
-            ex = ex.getNextException(); 
+      } catch (SQLException ex) {
+         errMsg = errMsg + "\n--- SQLException caught ---\n";
+         while (ex != null) {
+            errMsg += "Message: " + ex.getMessage();
+            errMsg += "SQLState: " + ex.getSQLState();
+            errMsg += "ErrorCode: " + ex.getErrorCode();
+            ex = ex.getNextException();
             errMsg += "";
-         } 
+         }
          response.sendRedirect("/signup");
-      } 
-    PrintWriter out = response.getWriter();
+      }
+      PrintWriter out = response.getWriter();
       response.setContentType("text/html");
 
+      String title = "Logged in as: ";
+      String username = request.getParameter("user_id");
+      String password = request.getParameter("password");
 
-		String title = "Logged in as: ";
-		String username = request.getParameter("user_id");
-		String password = request.getParameter("password");
-		
-		
-	}
+   }
 }

@@ -17,6 +17,15 @@
     <url-pattern>/Quiz</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>editQuizzes</servlet-name>
+    <servlet-class>EditQuizzesServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>editQuizzes</servlet-name>
+    <url-pattern>/editQuizzes</url-pattern>
+  </servlet-mapping>
 
   <servlet>
     <servlet-name>upload</servlet-name>
@@ -33,13 +42,10 @@
     <servlet-class>SignupServlet</servlet-class>
   </servlet>
 
-  
   <servlet-mapping>
     <servlet-name>signup</servlet-name>
     <url-pattern>/signup</url-pattern>
   </servlet-mapping>
-
-
 
   <servlet>
     <servlet-name>login</servlet-name>

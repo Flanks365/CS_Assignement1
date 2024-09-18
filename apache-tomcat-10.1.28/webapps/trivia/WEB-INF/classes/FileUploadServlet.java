@@ -122,7 +122,7 @@ public class FileUploadServlet extends HttpServlet {
             Base64.getEncoder().encodeToString(bArr) + "\"" +
             " width=\"500\" height=\"500\"></img>" +
             "</body></html>";
-      System.out.println(page);
+      // System.out.println(page);
       out.println(page);
    }
 

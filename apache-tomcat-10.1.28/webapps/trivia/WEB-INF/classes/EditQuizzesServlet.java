@@ -28,7 +28,8 @@ public class EditQuizzesServlet extends HttpServlet {
         String docType = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n";
 
         String html = docType + "<html>\n" +
-                "<head><title>Edit Quizzes</title></head>\n" +
+                "<head><title>Edit Quizzes</title>" +
+                "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n" +
                 "<body>\n" +
                 "<h1 align=\"center\">Edit Quizzes</h1>\n" +
                 "<p>Create a new quiz:</p>" +

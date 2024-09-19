@@ -14,7 +14,7 @@ import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
 @MultipartConfig
-public class EditQuestionsServlet extends HttpServlet {
+public class EditQuestionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -25,6 +25,7 @@ public class EditQuestionsServlet extends HttpServlet {
         String html = docType + "<html>\n" +
                 "<head><title>Edit Quiz</title>" +
                 "<script src=\"resources/js/editQuiz.js\" async></script>" +
+                "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + 
                 "</head>\n" +
                 "<body>\n";
         String errMsg = "";

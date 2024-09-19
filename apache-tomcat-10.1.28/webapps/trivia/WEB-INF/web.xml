@@ -52,13 +52,13 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>editQuiz</servlet-name>
-    <servlet-class>EditQuizServlet</servlet-class>
+    <servlet-name>editQuestions</servlet-name>
+    <servlet-class>EditQuestionsServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>editQuiz</servlet-name>
-    <url-pattern>/editQuiz</url-pattern>
+    <servlet-name>editQuestions</servlet-name>
+    <url-pattern>/editQuestions</url-pattern>
   </servlet-mapping>
   
   <servlet>

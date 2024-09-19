@@ -14,7 +14,7 @@ import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
 @MultipartConfig
-public class EditQuizServlet extends HttpServlet {
+public class EditQuestionsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

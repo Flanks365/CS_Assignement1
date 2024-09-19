@@ -29,7 +29,7 @@ public class EditQuizzesServlet extends HttpServlet {
 
         String html = docType + "<html>\n" +
                 "<head><title>Edit Quizzes</title>" +
-                "<script src=\"resources/js/editQuizzes.js\">" +
+                "<script src=\"resources/js/editQuizzes.js\" async></script>" +
                 "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n" +
                 "<body>\n" +
                 "<h1 align=\"center\">Edit Quizzes</h1>\n" +
@@ -50,7 +50,7 @@ public class EditQuizzesServlet extends HttpServlet {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select * from quizzes");
+            ResultSet rs = stmt.executeQuery("select * from categories");
             boolean hasResults = false;
             byte bArr[] = null;
             UUID sid = null;
@@ -65,7 +65,7 @@ public class EditQuizzesServlet extends HttpServlet {
                 byte[] raw = rs.getBytes(1);
                 sid = asUuid(raw);
                 name = rs.getString(2);
-                html += name + "<form action=\"editQuiz\" method=\"GET\">\n" +
+                html += name + "<form action=\"editQuestions\" method=\"GET\">\n" +
                         "<input type=\"hidden\" name=\"id\" value=\"" + sid + "\" />" +
                         "<input type=\"hidden\" name=\"quizName\" value=\"" + name + "\" />" +
                         "<input type=\"submit\" value=\"Edit\" />\n" +
@@ -104,7 +104,7 @@ public class EditQuizzesServlet extends HttpServlet {
         try {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
             PreparedStatement preparedStatement = con
-                    .prepareStatement("INSERT INTO quizzes (id, name, image_type, image) VALUES (?,?,?,?)");
+                    .prepareStatement("INSERT INTO categories (id, category_name, image_type, image) VALUES (?,?,?,?)");
             UUID uuid = UUID.randomUUID();
             preparedStatement.setBytes(1, asBytes(uuid));
             preparedStatement.setString(2, name);
@@ -127,7 +127,7 @@ public class EditQuizzesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, java.io.IOException {
         System.out.println("In doDelete");
         String name = request.getParameter("QuizName");
@@ -140,17 +140,7 @@ public class EditQuizzesServlet extends HttpServlet {
         try {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
             System.out.println("In try block");
-            // PreparedStatement preparedStatement = con
-            // .prepareStatement("INSERT INTO quizzes (id, name, image_type, image) VALUES
-            // (?,?,?,?)");
-            // UUID uuid = UUID.randomUUID();
-            // preparedStatement.setBytes(1, asBytes(uuid));
-            // preparedStatement.setString(2, name);
-            // preparedStatement.setString(3, contentType);
-            // preparedStatement.setBinaryStream(4, filePart.getInputStream());
-            // int row = preparedStatement.executeUpdate();
-            // preparedStatement.close();
-            // con.close();
+            
         } catch (SQLException ex) {
             while (ex != null) {
                 System.out.println("Message: " + ex.getMessage());

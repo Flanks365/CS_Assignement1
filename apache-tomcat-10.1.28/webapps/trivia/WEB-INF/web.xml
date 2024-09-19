@@ -53,7 +53,7 @@
 
   <servlet>
     <servlet-name>editQuestions</servlet-name>
-    <servlet-class>EditQuestionsServlet</servlet-class>
+    <servlet-class>EditQuestionServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>

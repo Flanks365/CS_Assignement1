@@ -24,7 +24,7 @@ public class EditQuestionServlet extends HttpServlet {
         String docType = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n";
         String html = docType + "<html>\n" +
                 "<head><title>Edit Quiz</title>" +
-                "<script src=\"resources/js/editQuiz.js\" async></script>" +
+                "<script src=\"resources/js/editQuestions.js\" async></script>" +
                 "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + 
                 "</head>\n" +
                 "<body>\n";
@@ -42,7 +42,7 @@ public class EditQuestionServlet extends HttpServlet {
 
             html += "<h1 align=\"center\">Edit Quiz: " + quizName + "</h1>\n" +
                     "<p>Create a new question:</p>" +
-                    "<form id=\"new-question-form\" action=\"editQuiz\" method=\"POST\" enctype=\"multipart/form-data\">"
+                    "<form id=\"new-question-form\" action=\"editQuestions\" method=\"POST\" enctype=\"multipart/form-data\">"
                     +
                     "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
                     "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
@@ -69,8 +69,7 @@ public class EditQuestionServlet extends HttpServlet {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
             PreparedStatement stmt = con
-                    .prepareStatement("select id, question, answer, decoy1, decoy2, decoy3 " +
-                            "from questions where quiz_id = ?");
+                    .prepareStatement("select id, question_text from questions where category_id = ?");
             stmt.setBytes(1, asBytes(quizId));
             ResultSet rs = stmt.executeQuery();
             boolean hasResults = false;
@@ -94,7 +93,7 @@ public class EditQuestionServlet extends HttpServlet {
                 html += "<div id=\"edit-question-" + sid + "\" class=\"question-edit-container\" " +
                         "questionId=\"" + sid + "\">" + question +
                         "<form class=\"question-edit-form\" id=\"edit-form-" + sid
-                        + "\" action=\"editQuiz\" method=\"PUT\" enctype=\"multipart/form-data\">" +
+                        + "\" action=\"editQuestions\" method=\"PUT\" enctype=\"multipart/form-data\">" +
                         "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
                         "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
                         "<input type=\"textarea\" name=\"Question\" placeholder=\"Question\" " +
@@ -152,10 +151,6 @@ public class EditQuestionServlet extends HttpServlet {
         UUID quizId = UUID.fromString(request.getParameter("id"));
         String name = request.getParameter("QuizName");
         String question = request.getParameter("Question");
-        String answer = request.getParameter("Answer");
-        String decoy1 = request.getParameter("Decoy1");
-        String decoy2 = request.getParameter("Decoy2");
-        String decoy3 = request.getParameter("Decoy3");
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");
         InputStream is;
@@ -174,18 +169,14 @@ public class EditQuestionServlet extends HttpServlet {
             PreparedStatement preparedStatement = con
                     .prepareStatement(
                             "INSERT INTO questions (" +
-                                    "id, quiz_id, question, answer, decoy1, decoy2, decoy3, content_type, content" +
-                                    ") VALUES (?,?,?,?,?,?,?,?,?)");
+                                    "id, category_id, question, content_type, content" +
+                                    ") VALUES (?,?,?,?,?)");
             UUID uuid = UUID.randomUUID();
             preparedStatement.setBytes(1, asBytes(uuid));
             preparedStatement.setBytes(2, asBytes(quizId));
             preparedStatement.setString(3, question);
-            preparedStatement.setString(4, answer);
-            preparedStatement.setString(5, decoy1);
-            preparedStatement.setString(6, decoy2);
-            preparedStatement.setString(7, decoy3);
-            preparedStatement.setString(8, contentType);
-            preparedStatement.setBinaryStream(9, is);
+            preparedStatement.setString(4, contentType);
+            preparedStatement.setBinaryStream(5, is);
 
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
@@ -200,66 +191,66 @@ public class EditQuestionServlet extends HttpServlet {
             }
         }
         response.setStatus(200);
-        response.sendRedirect("/trivia/editQuiz?id=" + quizId + "&quizName=" + name);
+        response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
     }
 
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    // @Override
+    // protected void doPut(HttpServletRequest request, HttpServletResponse response)
+    //         throws ServletException, IOException {
 
-        UUID quizId = UUID.fromString(request.getParameter("id"));
-        String name = request.getParameter("QuizName");
-        String question = request.getParameter("Question");
-        String answer = request.getParameter("Answer");
-        String decoy1 = request.getParameter("Decoy1");
-        String decoy2 = request.getParameter("Decoy2");
-        String decoy3 = request.getParameter("Decoy3");
-        Part filePart = request.getPart("FileName");
-        String contentType = request.getParameter("ContentType");
-        InputStream is;
-        if (contentType != "quote") {
-            contentType = filePart.getContentType();
-            is = filePart.getInputStream();
-        } else {
-            String quote = request.getParameter("QuoteText");
-            is = new ByteArrayInputStream(quote.getBytes(StandardCharsets.UTF_8));
-        }
+    //     UUID quizId = UUID.fromString(request.getParameter("id"));
+    //     String name = request.getParameter("QuizName");
+    //     String question = request.getParameter("Question");
+    //     String answer = request.getParameter("Answer");
+    //     String decoy1 = request.getParameter("Decoy1");
+    //     String decoy2 = request.getParameter("Decoy2");
+    //     String decoy3 = request.getParameter("Decoy3");
+    //     Part filePart = request.getPart("FileName");
+    //     String contentType = request.getParameter("ContentType");
+    //     InputStream is;
+    //     if (contentType != "quote") {
+    //         contentType = filePart.getContentType();
+    //         is = filePart.getInputStream();
+    //     } else {
+    //         String quote = request.getParameter("QuoteText");
+    //         is = new ByteArrayInputStream(quote.getBytes(StandardCharsets.UTF_8));
+    //     }
 
-        Connection con = null;
-        try {
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-            PreparedStatement preparedStatement = con
-                    .prepareStatement(
-                            "INSERT INTO questions (" +
-                                    "id, quiz_id, question, answer, decoy1, decoy2, decoy3, content_type, content" +
-                                    ") VALUES (?,?,?,?,?,?,?,?,?)");
-            UUID uuid = UUID.randomUUID();
-            preparedStatement.setBytes(1, asBytes(uuid));
-            preparedStatement.setBytes(2, asBytes(quizId));
-            preparedStatement.setString(3, question);
-            preparedStatement.setString(4, answer);
-            preparedStatement.setString(5, decoy1);
-            preparedStatement.setString(6, decoy2);
-            preparedStatement.setString(7, decoy3);
-            preparedStatement.setString(8, contentType);
-            preparedStatement.setBinaryStream(9, is);
+    //     Connection con = null;
+    //     try {
+    //         con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
+    //                 "system", "oracle1");
+    //         PreparedStatement preparedStatement = con
+    //                 .prepareStatement(
+    //                         "INSERT INTO questions (" +
+    //                                 "id, quiz_id, question, answer, decoy1, decoy2, decoy3, content_type, content" +
+    //                                 ") VALUES (?,?,?,?,?,?,?,?,?)");
+    //         UUID uuid = UUID.randomUUID();
+    //         preparedStatement.setBytes(1, asBytes(uuid));
+    //         preparedStatement.setBytes(2, asBytes(quizId));
+    //         preparedStatement.setString(3, question);
+    //         preparedStatement.setString(4, answer);
+    //         preparedStatement.setString(5, decoy1);
+    //         preparedStatement.setString(6, decoy2);
+    //         preparedStatement.setString(7, decoy3);
+    //         preparedStatement.setString(8, contentType);
+    //         preparedStatement.setBinaryStream(9, is);
 
-            int row = preparedStatement.executeUpdate();
-            preparedStatement.close();
-            con.close();
-        } catch (SQLException ex) {
-            while (ex != null) {
-                System.out.println("Message: " + ex.getMessage());
-                System.out.println("SQLState: " + ex.getSQLState());
-                System.out.println("ErrorCode: " + ex.getErrorCode());
-                ex = ex.getNextException();
-                System.out.println("");
-            }
-        }
-        response.setStatus(200);
-        response.sendRedirect("/trivia/editQuiz?id=" + quizId + "&quizName=" + name);
-    }
+    //         int row = preparedStatement.executeUpdate();
+    //         preparedStatement.close();
+    //         con.close();
+    //     } catch (SQLException ex) {
+    //         while (ex != null) {
+    //             System.out.println("Message: " + ex.getMessage());
+    //             System.out.println("SQLState: " + ex.getSQLState());
+    //             System.out.println("ErrorCode: " + ex.getErrorCode());
+    //             ex = ex.getNextException();
+    //             System.out.println("");
+    //         }
+    //     }
+    //     response.setStatus(200);
+    //     response.sendRedirect("/trivia/editQuiz?id=" + quizId + "&quizName=" + name);
+    // }
 
     public static byte[] asBytes(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);

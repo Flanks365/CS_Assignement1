@@ -35,7 +35,7 @@ public class PlayServlet extends HttpServlet {
 "<meta charset='UTF-8'>" +
 "<html>" +
 "<head>" +
-"<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">"+
+"<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">"+
 "</head>" +
 "<body>" +
 "<div>" +

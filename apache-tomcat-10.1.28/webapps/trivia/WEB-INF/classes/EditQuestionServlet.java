@@ -1,7 +1,7 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
-
+import java.io.PrintWriter;
 import java.sql.*;
 import java.io.*;
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ public class EditQuestionServlet extends HttpServlet {
         String html = docType + "<html>\n" +
                 "<head><title>Edit Quiz</title>" +
                 "<script src=\"resources/js/editQuestions.js\" async></script>" +
-                "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + 
+                "<link rel=\"stylesheet\" href=\"/resources/css/styles.css\" type=\"text/css\">\n" + 
                 "</head>\n" +
                 "<body>\n";
         String errMsg = "";

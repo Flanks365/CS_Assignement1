@@ -24,7 +24,7 @@ public class MainServlet extends HttpServlet {
 		//if admin == true, load the other buttons as well
 
 		String html = docType + "<html>\n" + "<head><title>" + title + "</title>"
-    + "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n"
+    + "<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" + "</head>\n"
 		+ "<body bgcolor=\"#f0f0f0\">\n" + "<h1 align=\"center\">" + title + "</h1>\n";
 
 		String role = (String) session.getAttribute("ROLE");

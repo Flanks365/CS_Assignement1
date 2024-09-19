@@ -8,7 +8,8 @@ public class LoginServlet extends HttpServlet {
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       response.setContentType("text/html");
       PrintWriter out = response.getWriter();
-      out.println("<html>\n" + "<head><title>" + "Login" + "</title></head>\n" + "<body>\n"
+      out.println("<html>\n" + "<head><title>" + "Login" + "</title>"
+            + "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" +"</head>\n" + "<body>\n"
             + "<h1 align=\"center\">" + "Login here" + "</h1>\n" + "<form action=\"login\" method=\"POST\">\n"
             + "Username: <input type=\"text\" name=\"username\">\n" + "<br />\n"
             + "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"

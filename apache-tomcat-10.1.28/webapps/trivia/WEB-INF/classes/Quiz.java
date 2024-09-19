@@ -22,7 +22,8 @@ public class Quiz extends HttpServlet {
         String docType = "<!doctype html public \"-//w3c//dtd html 4.0 " + "transitional//en\">\n";
 
         String html = docType + "<html>\n" +
-                      "<head><title>" + title + "</title></head>\n" +
+                      "<head><title>" + title + "</title>" +
+                      "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n" +
                       "<body bgcolor=\"#f0f0f0\">\n" +
                       "<h1 align=\"center\">" + title + "</h1>\n";
         

@@ -2,27 +2,26 @@
 For the questions and categories, let's use it this way:
 
 SQL> CREATE TABLE categories (
-        id INT PRIMARY KEY,
-        category_name VARCHAR(100)
+        id RAW(16) PRIMARY KEY,
+        category_name VARCHAR(100),
+	image_type VARCHAR(50),
+	image BLOB
     );
 
-Table created.
 
 SQL> CREATE TABLE questions (
-        id INT PRIMARY KEY,
+        id RAW(16) PRIMARY KEY,
         question_text VARCHAR(255),
         media_type VARCHAR(50),  -- "image" or "audio"
-        media_src VARCHAR(255),    -- file path or URL for media
-        category_id INT,
+        media_content BLOB,    -- media in base64
+        category_id RAW(16) NOT NULL,
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     );
 
 
-
-
 SQL> CREATE TABLE answers (
         id INT PRIMARY KEY,
-        question_id INT,
+        question_id RAW(16) NOT NULL,
         answer_text VARCHAR(255),
         is_correct CHAR(1), -- Use 'Y' for true, 'N' for false
         FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE

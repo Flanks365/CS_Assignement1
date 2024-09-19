@@ -37,7 +37,7 @@ public class LoginServlet extends HttpServlet {
          response.sendRedirect("/trivia/signup");
          } else {
          
-         String role = rs.getString("admin/user");
+         String role = rs.getString("role");
          String password = rs.getString("password");
 
          String pass = request.getParameter("password");

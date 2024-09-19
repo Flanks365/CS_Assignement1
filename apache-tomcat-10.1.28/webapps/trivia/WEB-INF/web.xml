@@ -132,6 +132,6 @@
 
   <servlet-mapping>
     <servlet-name>default</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/resources/css/*</url-pattern>
   </servlet-mapping>
 </web-app>

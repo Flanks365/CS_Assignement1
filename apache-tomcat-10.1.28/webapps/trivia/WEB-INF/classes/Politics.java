@@ -86,7 +86,7 @@ public class Politics extends HttpServlet {
                 "    <meta charset=\"UTF-8\">\n" +
                 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
                 "    <title>" + title + "</title>\n" +
-                "    <link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" +
+                "    <link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" +
                 "</head>\n" +
                 "<body>\n" +
                 "    <header>\n" +

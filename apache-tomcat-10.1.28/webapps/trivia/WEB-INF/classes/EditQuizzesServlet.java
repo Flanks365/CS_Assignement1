@@ -28,7 +28,8 @@ public class EditQuizzesServlet extends HttpServlet {
         String docType = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n";
 
         String html = docType + "<html>\n" +
-                "<head><title>Edit Quizzes</title></head>\n" +
+                "<head><title>Edit Quizzes</title>" +
+                "<script src=\"resources/js/editQuizzes.js\"></head>\n" +
                 "<body>\n" +
                 "<h1 align=\"center\">Edit Quizzes</h1>\n" +
                 "<p>Create a new quiz:</p>" +
@@ -63,12 +64,11 @@ public class EditQuizzesServlet extends HttpServlet {
                 byte[] raw = rs.getBytes(1);
                 sid = asUuid(raw);
                 name = rs.getString(2);
-                html += "<form action=\"editQuiz\" method=\"GET\">\n" +
-                        name +
+                html += name + "<form action=\"editQuiz\" method=\"GET\">\n" +
                         "<input type=\"hidden\" name=\"id\" value=\"" + sid + "\" />" +
                         "<input type=\"hidden\" name=\"quizName\" value=\"" + name + "\" />" +
                         "<input type=\"submit\" value=\"Edit\" />\n" +
-                        "<input type=\"submit\" value=\"Delete\" />\n" +
+                        "<input class=\"quiz-delete-button\" type=\"submit\" value=\"Delete\" />\n" +
                         "</form>\n";
             }
             stmt.close();
@@ -100,8 +100,6 @@ public class EditQuizzesServlet extends HttpServlet {
         String contentType = filePart.getContentType();
         String fileName = filePart.getSubmittedFileName();
         Connection con = null;
-        // if (true)
-        //     return;
         try {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
             PreparedStatement preparedStatement = con
@@ -114,6 +112,44 @@ public class EditQuizzesServlet extends HttpServlet {
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
             con.close();
+        } catch (SQLException ex) {
+            while (ex != null) {
+                System.out.println("Message: " + ex.getMessage());
+                System.out.println("SQLState: " + ex.getSQLState());
+                System.out.println("ErrorCode: " + ex.getErrorCode());
+                ex = ex.getNextException();
+                System.out.println("");
+            }
+        }
+        response.setStatus(200);
+        response.sendRedirect("/trivia/editQuizzes");
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, java.io.IOException {
+        System.out.println("In doDelete");
+        String name = request.getParameter("QuizName");
+        UUID quizId = UUID.fromString(request.getParameter("id"));
+        // Part filePart = request.getPart("FileName");
+        // String contentType = filePart.getContentType();
+        // String fileName = filePart.getSubmittedFileName();
+        Connection con = null;
+        System.out.println(name);
+        try {
+            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
+            System.out.println("In try block");
+            // PreparedStatement preparedStatement = con
+            // .prepareStatement("INSERT INTO quizzes (id, name, image_type, image) VALUES
+            // (?,?,?,?)");
+            // UUID uuid = UUID.randomUUID();
+            // preparedStatement.setBytes(1, asBytes(uuid));
+            // preparedStatement.setString(2, name);
+            // preparedStatement.setString(3, contentType);
+            // preparedStatement.setBinaryStream(4, filePart.getInputStream());
+            // int row = preparedStatement.executeUpdate();
+            // preparedStatement.close();
+            // con.close();
         } catch (SQLException ex) {
             while (ex != null) {
                 System.out.println("Message: " + ex.getMessage());

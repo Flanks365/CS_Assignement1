@@ -1,4 +1,35 @@
 
+For the questions and categories, let's use it this way:
+
+SQL> CREATE TABLE categories (
+        id INT PRIMARY KEY,
+        category_name VARCHAR(100)
+    );
+
+Table created.
+
+SQL> CREATE TABLE questions (
+        id INT PRIMARY KEY,
+        question_text VARCHAR(255),
+        media_type VARCHAR(50),  -- "image" or "audio"
+        media_src VARCHAR(255),    -- file path or URL for media
+        category_id INT,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+
+
+
+
+SQL> CREATE TABLE answers (
+        id INT PRIMARY KEY,
+        question_id INT,
+        answer_text VARCHAR(255),
+        is_correct CHAR(1), -- Use 'Y' for true, 'N' for false
+        FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    );
+
+
+
 
 --------------------------------------------------------------------------------------------------------
 

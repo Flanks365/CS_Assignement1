@@ -6,6 +6,10 @@
 
 <web-app>
 
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/resources/*</url-pattern>
+  </servlet-mapping>
 
   <servlet>
     <servlet-name>Quiz</servlet-name>
@@ -27,6 +31,16 @@
     <url-pattern>/politics</url-pattern>
   </servlet-mapping>
 
+<servlet>
+    <servlet-name>GetCorrectAnswerServlet</servlet-name>
+    <servlet-class>GetCorrectAnswerServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>GetCorrectAnswerServlet</servlet-name>
+    <url-pattern>/getCorrectAnswer</url-pattern>
+</servlet-mapping>
+
+
   <servlet>
     <servlet-name>editQuizzes</servlet-name>
     <servlet-class>EditQuizzesServlet</servlet-class>
@@ -35,6 +49,16 @@
   <servlet-mapping>
     <servlet-name>editQuizzes</servlet-name>
     <url-pattern>/editQuizzes</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>editQuiz</servlet-name>
+    <servlet-class>EditQuizServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>editQuiz</servlet-name>
+    <url-pattern>/editQuiz</url-pattern>
   </servlet-mapping>
 
   <servlet>

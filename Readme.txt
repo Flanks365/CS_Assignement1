@@ -1,4 +1,35 @@
 
+For the questions and categories, let's use it this way:
+
+SQL> CREATE TABLE categories (
+        id INT PRIMARY KEY,
+        category_name VARCHAR(100)
+    );
+
+Table created.
+
+SQL> CREATE TABLE questions (
+        id INT PRIMARY KEY,
+        question_text VARCHAR(255),
+        media_type VARCHAR(50),  -- "image" or "audio"
+        media_src VARCHAR(255),    -- file path or URL for media
+        category_id INT,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+
+
+
+
+SQL> CREATE TABLE answers (
+        id INT PRIMARY KEY,
+        question_id INT,
+        answer_text VARCHAR(255),
+        is_correct CHAR(1), -- Use 'Y' for true, 'N' for false
+        FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    );
+
+
+
 
 --------------------------------------------------------------------------------------------------------
 
@@ -26,6 +57,26 @@ CREATE TABLE users(
 "password" VARCHAR2(100),
 "admin/user" VARCHAR2(36), 
 PRIMARY KEY ("uid")
+);
+
+CREATE TABLE quizzes (
+id raw(16) primary key,
+name varchar(50),
+image_type varchar(50),
+image blob
+);
+
+create table questions (
+id raw(16) primary key,
+quiz_id raw(16) not null,
+question varchar(400),
+answer varchar(200),
+decoy1 varchar(200),
+decoy2 varchar(200),
+decoy3 varchar(200),
+content_type varchar(50),
+content blob,
+foreign key(quiz_id) references quizzes(id)
 );
 
 

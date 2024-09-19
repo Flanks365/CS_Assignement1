@@ -31,25 +31,27 @@ public class LoginServlet extends HttpServlet {
          Statement stmt2 = con.createStatement();
          String user = request.getParameter("username");
          ResultSet rs = stmt2.executeQuery("select * from users WHERE \"username\" ='" + user + "'");
-         while (rs.next()) {
-            String role = rs.getString("admin/user");
-            String password = rs.getString("password");
+         
+        if (!rs.next()) {
+         
+         response.sendRedirect("/trivia/signup");
+         } else {
+         
+         String role = rs.getString("admin/user");
+         String password = rs.getString("password");
 
-            String pass = request.getParameter("password");
+         String pass = request.getParameter("password");
 
-            if (BCrypt.checkpw(pass, password)) {
-               HttpSession session = request.getSession(true);
-               session.setAttribute("USER_ID", user);
-               session.setAttribute("ROLE", role);
-               response.setStatus(302);
-               response.sendRedirect("/trivia/main");
-               break;
-            } else {
-               response.sendRedirect("/trivia/login");
-               break;
-            }
-
+         if (BCrypt.checkpw(pass, password)) {
+             HttpSession session = request.getSession(true);
+             session.setAttribute("USER_ID", user);
+             session.setAttribute("ROLE", role);
+             response.setStatus(302);
+             response.sendRedirect("/trivia/main");
+         } else {
+             response.sendRedirect("/trivia/login");
          }
+     }
          stmt2.close();
          con.close();
          System.out.println("\n\n");
@@ -64,12 +66,6 @@ public class LoginServlet extends HttpServlet {
          }
          response.sendRedirect("/signup");
       }
-      PrintWriter out = response.getWriter();
-      response.setContentType("text/html");
-
-      String title = "Logged in as: ";
-      String username = request.getParameter("user_id");
-      String password = request.getParameter("password");
-
+    
    }
 }

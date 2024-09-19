@@ -20,7 +20,7 @@ SQL> CREATE TABLE questions (
 
 
 SQL> CREATE TABLE answers (
-        id INT PRIMARY KEY,
+        id RAW(16) PRIMARY KEY,
         question_id RAW(16) NOT NULL,
         answer_text VARCHAR(255),
         is_correct CHAR(1), -- Use 'Y' for true, 'N' for false

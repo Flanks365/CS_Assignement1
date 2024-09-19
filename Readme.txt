@@ -28,6 +28,26 @@ CREATE TABLE users(
 PRIMARY KEY ("uid")
 );
 
+CREATE TABLE quizzes (
+id raw(16) primary key,
+name varchar(50),
+image_type varchar(50),
+image blob
+);
+
+create table questions (
+id raw(16) primary key,
+quiz_id raw(16) not null,
+question varchar(400),
+answer varchar(200),
+decoy1 varchar(200),
+decoy2 varchar(200),
+decoy3 varchar(200),
+content_type varchar(50),
+content blob,
+foreign key(quiz_id) references quizzes(id)
+);
+
 
 TO BE ADDED
 

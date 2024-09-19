@@ -63,8 +63,10 @@ public class EditQuizzesServlet extends HttpServlet {
                 byte[] raw = rs.getBytes(1);
                 sid = asUuid(raw);
                 name = rs.getString(2);
-                html += "<form action=\"editQuizzes\" method=\"GET\">\n" +
+                html += "<form action=\"editQuiz\" method=\"GET\">\n" +
                         name +
+                        "<input type=\"hidden\" name=\"id\" value=\"" + sid + "\" />" +
+                        "<input type=\"hidden\" name=\"quizName\" value=\"" + name + "\" />" +
                         "<input type=\"submit\" value=\"Edit\" />\n" +
                         "<input type=\"submit\" value=\"Delete\" />\n" +
                         "</form>\n";

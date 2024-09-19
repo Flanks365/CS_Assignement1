@@ -106,5 +106,14 @@
     <url-pattern>/search</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>categories</servlet-name>
+    <servlet-class>CategoriesServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>categories</servlet-name>
+    <url-pattern>/categories</url-pattern>
+  </servlet-mapping>
 
 </web-app>

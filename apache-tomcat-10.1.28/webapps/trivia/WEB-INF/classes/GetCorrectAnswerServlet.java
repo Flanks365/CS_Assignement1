@@ -2,12 +2,11 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.*;
 import java.sql.*;
-import java.util.Base64;
 
 public class GetCorrectAnswerServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/plain");  // Return plain text response
+        response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
         Connection con = null;
 
@@ -20,43 +19,21 @@ public class GetCorrectAnswerServlet extends HttpServlet {
             String questionId = request.getParameter("questionId");
             String answerId = request.getParameter("answerId");
 
+            // Basic validation
             if (questionId == null || questionId.isEmpty() || answerId == null || answerId.isEmpty()) {
-                out.print("error");  // Output error message
+                out.print("error: missing parameters");
                 return;
             }
 
-            // Ensure both questionId and answerId only contain alphanumeric characters
-            questionId = makeAlphanumeric(questionId);
-            answerId = makeAlphanumeric(answerId);
-
-            // Decode URL-safe Base64-encoded questionId and answerId to byte arrays
-            byte[] questionIdBytes = Base64.getUrlDecoder().decode(questionId);
-            byte[] answerIdBytes = Base64.getUrlDecoder().decode(answerId);
-
-            // Retrieve the correct answer ID
-            String correctAnswerId = getCorrectAnswerId(questionIdBytes, con);
-
-            // Compare the provided answerId with the correctAnswerId
-            if (correctAnswerId != null && correctAnswerId.equals(Base64.getUrlEncoder().encodeToString(answerIdBytes))) {
-                out.print("correct");  // Answer is correct
+            // Check if the answer is correct
+            if (isCorrectAnswer(answerId, con)) {
+                out.print("correct");                
             } else {
-                out.print("incorrect");  // Answer is incorrect
+                out.print("incorrect");
             }
 
             out.flush();
-        } catch (IllegalArgumentException e) {
-            // Catch any Base64 decoding issues
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("error");
-            out.flush();
-        } catch (SQLException e) {
-            // SQL-related errors
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("error");
-            out.flush();
-        } catch (Exception e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("error");
@@ -72,20 +49,15 @@ public class GetCorrectAnswerServlet extends HttpServlet {
         }
     }
 
-    // Function to ensure the string is alphanumeric (strips out non-alphanumeric characters)
-    private String makeAlphanumeric(String input) {
-        return input.replaceAll("[^A-Za-z0-9]", ""); // Strip out all non-alphanumeric characters
-    }
-
-    private String getCorrectAnswerId(byte[] questionIdBytes, Connection con) throws SQLException {
-        PreparedStatement stmt = con.prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'Y'");
-        stmt.setBytes(1, questionIdBytes); // Use byte array for RAW(16) question ID
+    // Method to check if the answerId corresponds to a correct answer
+    private boolean isCorrectAnswer(String answerId, Connection con) throws SQLException {
+        PreparedStatement stmt = con.prepareStatement("SELECT is_correct FROM answers WHERE id = ?");
+        stmt.setString(1, answerId);
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            byte[] correctAnswerIdBytes = rs.getBytes("id"); // Get RAW(16) id as byte array
-            return Base64.getUrlEncoder().encodeToString(correctAnswerIdBytes); // Convert the correct answer ID to URL-safe Base64 string
+            return "Y".equals(rs.getString("is_correct"));
         }
-        return null; // No correct answer found
+        return false;
     }
 }

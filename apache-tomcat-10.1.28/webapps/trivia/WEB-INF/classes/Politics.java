@@ -3,6 +3,27 @@ import jakarta.servlet.*;
 import java.io.*;
 import java.sql.*;
 import java.util.Base64;
+import java.util.UUID;
+import jakarta.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.MultipartConfig;
+//import jakarta.servlet.http.Part;
+import java.sql.*;
+import java.io.*;
+import java.time.LocalDate;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.StringBuilder;
+import java.util.Base64;
+import java.util.Date;
+import java.util.UUID;
+import java.text.*;
+import java.nio.*;
+
 
 public class Politics extends HttpServlet {
 
@@ -45,17 +66,19 @@ public class Politics extends HttpServlet {
             }
 
             byte[] categoryIdRaw = categoryRs.getBytes("id");
-            String categoryId = Base64.getEncoder().encodeToString(categoryIdRaw);
+
+            UUID categoryId = asUuid(categoryIdRaw);
 
             PreparedStatement questionStmt = con.prepareStatement(
                 "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = ?) WHERE rnum = ?");
-            questionStmt.setBytes(1, Base64.getDecoder().decode(categoryId));
+            questionStmt.setBytes(1, categoryIdRaw);
             questionStmt.setInt(2, currentQuestionIndex + 1);
             ResultSet questionRs = questionStmt.executeQuery();
 
             if (questionRs.next()) {
+                String questionId = questionRs.getString("id");
                 byte[] questionIdRaw = questionRs.getBytes("id");
-                String questionId = Base64.getEncoder().encodeToString(questionIdRaw);
+                //String questionId = Base64.getEncoder().encodeToString(questionIdRaw);
                 String questionText = questionRs.getString("question_text");
                 System.out.println("Question ID: " + questionId);  // Log raw question ID
 
@@ -64,13 +87,13 @@ public class Politics extends HttpServlet {
                         .append("<div class='answers'>");
 
                 PreparedStatement answersStmt = con.prepareStatement("SELECT * FROM answers WHERE question_id = ?");
-                answersStmt.setBytes(1, Base64.getDecoder().decode(questionId));
+                answersStmt.setBytes(1, questionIdRaw);
                 ResultSet answersRs = answersStmt.executeQuery();
 
                 while (answersRs.next()) {
                     String answerText = answersRs.getString("answer_text");
                     byte[] answerIdRaw = answersRs.getBytes("id");
-                    String answerId = Base64.getEncoder().encodeToString(answerIdRaw);
+                    String answerId = answersRs.getString("id");
                     System.out.println("Answer ID: " + answerId);  // Log raw answer ID
 
                     questionHtml.append("<button onclick='selectAnswer(\"").append(answerId).append("\", \"")
@@ -122,8 +145,6 @@ public class Politics extends HttpServlet {
                 "        function selectAnswer(answerId, questionId, currentIndex) {\n" +
                 "            console.log('Fetching answer for questionId:', questionId, 'and answerId:', answerId);\n" +
                 "            fetch('getCorrectAnswer?questionId=' + questionId + '&answerId=' + answerId)\n" +
-
-
                 "                .then(response => response.text())\n" +
                 "                .then(result => {\n" +
                 "                 alert(result)\n" +
@@ -140,4 +161,12 @@ public class Politics extends HttpServlet {
                 "</body>\n" +
                 "</html>");
     }
+
+    public static UUID asUuid(byte[] bytes) {
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        long firstLong = bb.getLong();
+        long secondLong = bb.getLong();
+        return new UUID(firstLong, secondLong);
+    }
 }
+

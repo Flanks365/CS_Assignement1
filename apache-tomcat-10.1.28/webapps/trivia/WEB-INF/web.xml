@@ -28,17 +28,18 @@
   
   <servlet-mapping>
     <servlet-name>politics</servlet-name>
-    <url-pattern>/politics</url-pattern>
+    <url-pattern>/Quizpage/*</url-pattern>
   </servlet-mapping>
 
-<servlet>
+  <servlet>
     <servlet-name>GetCorrectAnswerServlet</servlet-name>
     <servlet-class>GetCorrectAnswerServlet</servlet-class>
-</servlet>
-<servlet-mapping>
+  </servlet>
+  
+  <servlet-mapping>
     <servlet-name>GetCorrectAnswerServlet</servlet-name>
     <url-pattern>/getCorrectAnswer</url-pattern>
-</servlet-mapping>
+  </servlet-mapping>
 
 
   <servlet>

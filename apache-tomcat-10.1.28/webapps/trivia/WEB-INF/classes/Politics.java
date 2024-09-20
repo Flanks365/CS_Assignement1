@@ -2,6 +2,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.*;
 import java.sql.*;
+import java.util.Base64;
 
 public class Politics extends HttpServlet {
 
@@ -14,50 +15,70 @@ public class Politics extends HttpServlet {
             return; // Ensure no further processing occurs after redirection
         }
 
-        // Get the current question index from the request (if available)
+        String categoryName = request.getParameter("category_name");
+        
+        categoryName="Politics";
+        if (categoryName == null || categoryName.isEmpty()) {
+            response.getWriter().write("Category not provided.");
+            return;
+        }
+
         String indexParam = request.getParameter("currentQuestionIndex");
         int currentQuestionIndex = (indexParam != null) ? Integer.parseInt(indexParam) : 0;
 
-        String title = "50’s Politics Quiz";
+        String title = categoryName + " Quiz";
         response.setContentType("text/html");
 
-        // Retrieve questions and answers from the database
         StringBuilder questionHtml = new StringBuilder();
         Connection con = null;
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
 
-            // Retrieve the current question
+            PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE category_name = ?");
+            categoryStmt.setString(1, categoryName);
+            ResultSet categoryRs = categoryStmt.executeQuery();
+
+            if (!categoryRs.next()) {
+                response.getWriter().write("Invalid category name.");
+                return;
+            }
+
+            byte[] categoryIdRaw = categoryRs.getBytes("id");
+            String categoryId = Base64.getEncoder().encodeToString(categoryIdRaw);
+
             PreparedStatement questionStmt = con.prepareStatement(
-                "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = 2) WHERE rnum = ?"
-            );
-            questionStmt.setInt(1, currentQuestionIndex + 1); // Adjust for the 1-based index
+                "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = ?) WHERE rnum = ?");
+            questionStmt.setBytes(1, Base64.getDecoder().decode(categoryId));
+            questionStmt.setInt(2, currentQuestionIndex + 1);
             ResultSet questionRs = questionStmt.executeQuery();
 
             if (questionRs.next()) {
-                int questionId = questionRs.getInt("id");
+                byte[] questionIdRaw = questionRs.getBytes("id");
+                String questionId = Base64.getEncoder().encodeToString(questionIdRaw);
                 String questionText = questionRs.getString("question_text");
+                System.out.println("Question ID: " + questionId);  // Log raw question ID
 
                 questionHtml.append("<div class='question'>")
                         .append("<h3>").append(questionText).append("</h3>")
                         .append("<div class='answers'>");
 
-                // Retrieve answers for the current question
                 PreparedStatement answersStmt = con.prepareStatement("SELECT * FROM answers WHERE question_id = ?");
-                answersStmt.setInt(1, questionId);
+                answersStmt.setBytes(1, Base64.getDecoder().decode(questionId));
                 ResultSet answersRs = answersStmt.executeQuery();
 
                 while (answersRs.next()) {
                     String answerText = answersRs.getString("answer_text");
-                    int answerId = answersRs.getInt("id");
-                    questionHtml.append("<button onclick='selectAnswer(").append(answerId).append(", ").append(questionId).append(", ").append(currentQuestionIndex).append(")'>")
+                    byte[] answerIdRaw = answersRs.getBytes("id");
+                    String answerId = Base64.getEncoder().encodeToString(answerIdRaw);
+                    System.out.println("Answer ID: " + answerId);  // Log raw answer ID
+
+                    questionHtml.append("<button onclick='selectAnswer(\"").append(answerId).append("\", \"")
+                                .append(questionId).append("\", ").append(currentQuestionIndex).append(")'>")
                                 .append(answerText).append("</button>");
                 }
 
-                questionHtml.append("</div></div>"); // Close the question and answers divs
-
-                // Close the answers ResultSet and statement
+                questionHtml.append("</div></div>");
                 answersRs.close();
                 answersStmt.close();
             } else {
@@ -78,7 +99,6 @@ public class Politics extends HttpServlet {
             }
         }
 
-        // Final HTML output
         PrintWriter out = response.getWriter();
         out.println("<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
@@ -86,12 +106,12 @@ public class Politics extends HttpServlet {
                 "    <meta charset=\"UTF-8\">\n" +
                 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
                 "    <title>" + title + "</title>\n" +
-                "    <link rel=\"stylesheet\" href=\"styles.css\">\n" +
+                "    <link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" +
                 "</head>\n" +
                 "<body>\n" +
                 "    <header>\n" +
                 "        <h1>" + title + "</h1>\n" +
-                "        <p>Test your knowledge of the political landscape of the 1950s!</p>\n" +
+                "        <p>Test your knowledge of the " + categoryName + " landscape!</p>\n" +
                 "    </header>\n" +
                 "    <main class=\"quiz-container\">\n" +
                 "        <div id=\"quiz-content\">\n" +
@@ -100,30 +120,24 @@ public class Politics extends HttpServlet {
                 "    </main>\n" +
                 "    <script>\n" +
                 "        function selectAnswer(answerId, questionId, currentIndex) {\n" +
-                "            fetch('getCorrectAnswer?questionId=' + questionId)\n" +
-                "                .then(response => response.json())\n" +
-                "                .then(data => {\n" +
-                "                    const correctAnswerId = data.correctAnswerId;\n" +
-                "                    if (answerId === correctAnswerId) {\n" +
+                "            console.log('Fetching answer for questionId:', questionId, 'and answerId:', answerId);\n" +
+                "            fetch('getCorrectAnswer?questionId=' + questionId + '&answerId=' + answerId)\n" +
+
+
+                "                .then(response => response.text())\n" +
+                "                .then(result => {\n" +
+                "                 alert(result)\n" +
+                "                    if (result === 'correct') {\n" +
                 "                        alert('Correct! Moving to the next question.');\n" +
-                "                        window.location.href = 'politics?currentQuestionIndex=' + (currentIndex + 1);\n" +
+                "                        window.location.href = 'Quizpage?category_name=" + categoryName + "&currentQuestionIndex=' + (currentIndex + 1);\n" +
                 "                    } else {\n" +
-                "                        alert('Incorrect, try again.');\n" +
+                "                        alert(result);\n" +
                 "                    }\n" +
-                "                });\n" +
+                "                })\n" +
+                "                .catch(error => console.error('Error checking the answer:', error));\n" +
                 "        }\n" +
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>");
-    }
-
-    private int getCorrectAnswerId(int questionId, Connection con) throws SQLException {
-        PreparedStatement stmt = con.prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'T'");
-        stmt.setInt(1, questionId);
-        ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            return rs.getInt("id");
-        }
-        return -1; // No correct answer found
     }
 }

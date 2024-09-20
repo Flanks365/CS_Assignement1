@@ -32,7 +32,7 @@ public class SignupServlet extends HttpServlet {
          }
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
-         ResultSet rs = stmt2.executeQuery("select * from users where \"username\" = '" + request.getParameter("user_id") + "'");
+         ResultSet rs = stmt2.executeQuery("select * from users where username = '" + request.getParameter("user_id") + "'");
          if (rs.next()) {
             errorFlag = true;
          } else {

@@ -33,6 +33,10 @@ public class PlayServlet extends HttpServlet {
       out.println( 
 "<!DOCTYPE html>" +
 "<meta charset='UTF-8'>" +
+"<html>" +
+"<head>" +
+"<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">"+
+"</head>" +
 "<body>" +
 "<div>" +
 "<iframe id=\"Video\" width=\"420\" height=\"345\" src=https://www.youtube.com/embed/" + contentPath +"?autoplay=1&mute=1&start=62&end=162>" +

@@ -9,7 +9,8 @@ public class SignupServlet extends HttpServlet {
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       response.setContentType("text/html");
       PrintWriter out = response.getWriter();
-      out.println("<html>\n" + "<head><title>" + "Sign up" + "</title></head>\n" + "<body>\n"
+      out.println("<html>\n" + "<head><title>" + "Sign up" + "</title>"
+            + "<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" + "</head>\n" + "<body>\n"
             + "<h1 align=\"center\">" + "Sign up" + "</h1>\n" + "<form action=\"signup\" method=\"POST\">\n"
             + "Username: <input type=\"text\" name=\"user_id\">\n" + "<br />\n"
             + "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
@@ -62,7 +63,8 @@ public class SignupServlet extends HttpServlet {
 
       if (errorFlag) {
          PrintWriter out = response.getWriter();
-         out.println("<html>\n" + "<head><title>" + "Sign up" + "</title></head>\n" + "<body>\n" 
+         out.println("<html>\n" + "<head><title>" + "Sign up" + "</title>"
+         + "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n" + "<body>\n" 
          + "<h1 align=\"center\">" + "Sign up" + "</h1>\n" 
          + "<div id='error' style= 'color:red;'> <strong> Sorry that username is already taken </strong> </div>" 
          + "<form action=\"signup\" method=\"POST\">\n"

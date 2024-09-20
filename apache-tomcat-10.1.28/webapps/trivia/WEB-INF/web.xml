@@ -54,7 +54,7 @@
 
   <servlet>
     <servlet-name>editQuestions</servlet-name>
-    <servlet-class>EditQuestionsServlet</servlet-class>
+    <servlet-class>EditQuestionServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
@@ -131,4 +131,8 @@
     <url-pattern>/categories</url-pattern>
   </servlet-mapping>
 
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/resources/css/*</url-pattern>
+  </servlet-mapping>
 </web-app>

@@ -4,6 +4,7 @@ import jakarta.servlet.annotation.MultipartConfig;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.io.*;
+import java.util.*;
 import java.time.LocalDate;
 import java.lang.StringBuilder;
 import java.util.Base64;
@@ -38,7 +39,9 @@ public class EditQuestionServlet extends HttpServlet {
                 return;
             }
             String quizName = request.getParameter("quizName");
-            System.out.println("quizName: " + quizName);
+            Enumeration<String> params = request.getParameterNames();
+            System.out.println("params: " + Arrays.toString(request.getParameterValues("quizName")));
+            
             UUID quizId = UUID.fromString(request.getParameter("id"));
 
             html += "<h1 align=\"center\">Edit Quiz: " + quizName + "</h1>\n" +
@@ -147,7 +150,7 @@ public class EditQuestionServlet extends HttpServlet {
             throws ServletException, IOException {
 
         UUID quizId = UUID.fromString(request.getParameter("id"));
-        String name = request.getParameter("QuizName");
+        String name = request.getParameter("quizName");
         String question = request.getParameter("Question");
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");

@@ -109,6 +109,7 @@ public class EditQuizzesServlet extends HttpServlet {
             preparedStatement.setBytes(1, asBytes(uuid));
             preparedStatement.setString(2, name);
             preparedStatement.setString(3, contentType);
+            // System.out.println(filePart.getInputStream());
             preparedStatement.setBinaryStream(4, filePart.getInputStream());
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();

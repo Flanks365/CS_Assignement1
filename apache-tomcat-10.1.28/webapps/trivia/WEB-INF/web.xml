@@ -41,6 +41,15 @@
     <url-pattern>/getCorrectAnswer</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>blobTest</servlet-name>
+    <servlet-class>BlobTest</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>blobTest</servlet-name>
+    <url-pattern>/blobTest</url-pattern>
+  </servlet-mapping>
 
   <servlet>
     <servlet-name>editQuizzes</servlet-name>

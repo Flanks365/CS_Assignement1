@@ -154,6 +154,17 @@ public class EditQuestionServlet extends HttpServlet {
         String question = request.getParameter("Question");
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");
+
+        String answer = request.getParameter("Answer");
+        String decoy1 = request.getParameter("Decoy1");
+        String decoy2 = request.getParameter("Decoy2");
+        String decoy3 = request.getParameter("Decoy3");
+
+        System.out.println("answer: " + answer);
+        System.out.println("decoy1: " + decoy1);
+        System.out.println("decoy2: " + decoy2);
+        System.out.println("decoy3: " + decoy3);
+        
         InputStream is;
         if (!contentType.equals("quote")) {
             contentType = filePart.getContentType();
@@ -181,6 +192,42 @@ public class EditQuestionServlet extends HttpServlet {
 
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
+
+
+            PreparedStatement answerStatement = con
+                    .prepareStatement(
+                            "INSERT INTO answers (" +
+                                    "id, question_id, answer_text, is_correct" +
+                                    ") VALUES (?,?,?,?)");
+            UUID answerUuid = UUID.randomUUID();
+            answerStatement.setBytes(1, asBytes(answerUuid));
+            answerStatement.setBytes(2, asBytes(uuid));
+            answerStatement.setString(3, answer);
+            answerStatement.setBoolean(4, true);
+            answerStatement.executeUpdate();
+
+            UUID decoy1Uuid = UUID.randomUUID();
+            answerStatement.setBytes(1, asBytes(decoy1Uuid));
+            answerStatement.setBytes(2, asBytes(uuid));
+            answerStatement.setString(3, decoy1);
+            answerStatement.setBoolean(4, false);
+            answerStatement.executeUpdate();
+
+            UUID decoy2Uuid = UUID.randomUUID();
+            answerStatement.setBytes(1, asBytes(decoy2Uuid));
+            answerStatement.setBytes(2, asBytes(uuid));
+            answerStatement.setString(3, decoy2);
+            answerStatement.setBoolean(4, false);
+            answerStatement.executeUpdate();
+
+            UUID decoy3Uuid = UUID.randomUUID();
+            answerStatement.setBytes(1, asBytes(decoy3Uuid));
+            answerStatement.setBytes(2, asBytes(uuid));
+            answerStatement.setString(3, decoy3);
+            answerStatement.setBoolean(4, false);
+            answerStatement.executeUpdate();
+
+            answerStatement.close();
             con.close();
         } catch (SQLException ex) {
             while (ex != null) {

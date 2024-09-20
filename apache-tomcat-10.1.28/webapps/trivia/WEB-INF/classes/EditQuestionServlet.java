@@ -93,9 +93,10 @@ public class EditQuestionServlet extends HttpServlet {
                 html += "<div id=\"edit-question-" + sid + "\" class=\"question-edit-container\" " +
                         "questionId=\"" + sid + "\">" + question +
                         "<form class=\"question-edit-form\" id=\"edit-form-" + sid
-                        + "\" action=\"editQuestions\" method=\"PUT\" enctype=\"multipart/form-data\">" +
+                        + "\" action=\"editQuestions\" method=\"POST\" enctype=\"multipart/form-data\">" +
                         "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
                         "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
+                        "<input type=\"hidden\" name=\"questionId\" value=\"" + sid + "\" />" +
                         "<input type=\"textarea\" name=\"Question\" placeholder=\"Question text\" " +
                         "value=\"" + question + "\" required />" +
                         "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" " +
@@ -155,16 +156,18 @@ public class EditQuestionServlet extends HttpServlet {
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");
 
+        String sid = request.getParameter("questionId");
         String answer = request.getParameter("Answer");
         String decoy1 = request.getParameter("Decoy1");
         String decoy2 = request.getParameter("Decoy2");
         String decoy3 = request.getParameter("Decoy3");
 
+        System.out.println("questionId: " + sid);
         System.out.println("answer: " + answer);
         System.out.println("decoy1: " + decoy1);
         System.out.println("decoy2: " + decoy2);
         System.out.println("decoy3: " + decoy3);
-        
+
         InputStream is;
         if (!contentType.equals("quote")) {
             contentType = filePart.getContentType();
@@ -193,6 +196,31 @@ public class EditQuestionServlet extends HttpServlet {
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
 
+            PreparedStatement checkStatement = con
+                    .prepareStatement(
+                            "SELECT id FROM questions WHERE id = ?");
+            checkStatement.setString(1, sid);
+            ResultSet rs = checkStatement.executeQuery();
+            checkStatement.close();
+
+            if (!rs.next()) {
+                System.out.println("Question not inserted");
+                PreparedStatement deleteStatement = con
+                        .prepareStatement(
+                                "DELETE FROM answers WHERE question_id = ?");
+                deleteStatement.setString(1, sid);
+                deleteStatement.executeUpdate();
+                deleteStatement.close();
+
+
+                PreparedStatement deleteQuestionStatement = con
+                        .prepareStatement(
+                                "DELETE FROM questions WHERE id = ?");
+                deleteQuestionStatement.setString(1, sid);
+                deleteQuestionStatement.executeUpdate();
+                deleteQuestionStatement.close();
+                return;
+            }
 
             PreparedStatement answerStatement = con
                     .prepareStatement(

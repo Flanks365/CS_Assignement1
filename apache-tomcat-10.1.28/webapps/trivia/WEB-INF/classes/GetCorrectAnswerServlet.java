@@ -79,20 +79,13 @@ public class GetCorrectAnswerServlet extends HttpServlet {
 
     private String getCorrectAnswerId(byte[] questionIdBytes, Connection con) throws SQLException {
         PreparedStatement stmt = con.prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'Y'");
-        stmt.setBytes(1, questionIdBytes);
+        stmt.setBytes(1, questionIdBytes); // Use byte array for RAW(16) question ID
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
             byte[] correctAnswerIdBytes = rs.getBytes("id"); // Get RAW(16) id as byte array
-            return Base64.getUrlEncoder().encodeToString(correctAnswerIdBytes); // Convert to URL-safe Base64
+            return Base64.getUrlEncoder().encodeToString(correctAnswerIdBytes); // Convert the correct answer ID to URL-safe Base64 string
         }
         return null; // No correct answer found
-    }
-
-    // Inside the doGet method, adjust the comparison:
-    if (correctAnswerId != null && Arrays.equals(correctAnswerId.getBytes(), answerIdBytes)) {
-        out.print("correct");
-    } else {
-        out.print("incorrect");
     }
 }

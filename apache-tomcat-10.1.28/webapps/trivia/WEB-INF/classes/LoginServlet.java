@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
          con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
          Statement stmt2 = con.createStatement();
          String user = request.getParameter("username");
-         ResultSet rs = stmt2.executeQuery("select * from users WHERE \"username\" ='" + user + "'");
+         ResultSet rs = stmt2.executeQuery("select * from users WHERE username ='" + user + "'");
          
         if (!rs.next()) {
          
@@ -64,7 +64,7 @@ public class LoginServlet extends HttpServlet {
             ex = ex.getNextException();
             errMsg += "";
          }
-         response.sendRedirect("/signup");
+         response.sendRedirect("/trivia/signup");
       }
     
    }

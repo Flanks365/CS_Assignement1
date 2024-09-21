@@ -38,7 +38,7 @@ public class Politics extends HttpServlet {
 
         String categoryName = request.getParameter("category_name");
         
-        categoryName="Science";
+        //categoryName="Science";
         if (categoryName == null || categoryName.isEmpty()) {
             response.getWriter().write("Category not provided.");
             return;
@@ -100,12 +100,13 @@ public class Politics extends HttpServlet {
                                 .append(questionId).append("\", ").append(currentQuestionIndex).append(")'>")
                                 .append(answerText).append("</button>");
                 }
-
+                questionHtml.append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
                 questionHtml.append("</div></div>");
                 answersRs.close();
                 answersStmt.close();
             } else {
                 questionHtml.append("<img src='https://images.slideplayer.com/20/5999287/slides/slide_30.jpg'>");
+                questionHtml.append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
             }
 
             questionRs.close();
@@ -149,10 +150,10 @@ public class Politics extends HttpServlet {
                 "                .then(result => {\n" +
                 "                 alert(result)\n" +
                 "                    if (result === 'correct') {\n" +
-                "                        alert('Correct! Moving to the next question.');\n" +
+                "                        alert('Moving to the next question.');\n" +
                 "                        window.location.href = 'Quizpage?category_name=" + categoryName + "&currentQuestionIndex=' + (currentIndex + 1);\n" +
                 "                    } else {\n" +
-                "                        alert(result);\n" +
+                "                        alert('Try Again.');\n" +
                 "                    }\n" +
                 "                })\n" +
                 "                .catch(error => console.error('Error checking the answer:', error));\n" +
@@ -169,4 +170,3 @@ public class Politics extends HttpServlet {
         return new UUID(firstLong, secondLong);
     }
 }
-

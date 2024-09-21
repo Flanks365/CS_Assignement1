@@ -102,6 +102,7 @@ public class Politics extends HttpServlet {
                                 .append(answerText).append("</button>");
                 }
                 questionHtml.append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
+                questionHtml.append("<br><br><button onclick=\"window.location.href='categories'\">Back to Play Quizzes</button>");
                 questionHtml.append("</div></div>");
                 answersRs.close();
                 answersStmt.close();

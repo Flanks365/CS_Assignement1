@@ -23,6 +23,11 @@ public class EditQuizzesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.setStatus(302);
+            response.sendRedirect("login");
+        }
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
         String docType = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n";
@@ -72,6 +77,9 @@ public class EditQuizzesServlet extends HttpServlet {
                         "<input class=\"quiz-delete-button\" type=\"submit\" value=\"Delete\" />\n" +
                         "</form>\n";
             }
+            html += "<br><br><br><form action=\"main\" method=\"get\">" +  
+			"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
+			"</form>";
             stmt.close();
             con.close();
         } catch (SQLException ex) {

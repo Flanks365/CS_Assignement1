@@ -17,6 +17,12 @@ public class EditQuestionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+
+		if (session == null) {
+			response.setStatus(302);
+			response.sendRedirect("login");
+		}
         System.out.println();
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
@@ -124,6 +130,9 @@ public class EditQuestionServlet extends HttpServlet {
                         "<button class=\"question-delete\" id=\"question-delete-" + sid + "\">Delete</button><br>" +
                         "</div>";
             }
+            html += "<br><br><br><form action=\"editQuizzes\" method=\"get\">" +  
+			"<input type=\"submit\" value=\"Back to Edit Quizzes Page\"/>\n" +
+			"</form>";
             stmt.close();
             con.close();
         } catch (SQLException ex) {
@@ -227,28 +236,28 @@ public class EditQuestionServlet extends HttpServlet {
             answerStatement.setBytes(1, asBytes(answerUuid));
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, answer);
-            answerStatement.setBoolean(4, true);
+            answerStatement.setString(4, "Y");
             answerStatement.executeUpdate();
 
             UUID decoy1Uuid = UUID.randomUUID();
             answerStatement.setBytes(1, asBytes(decoy1Uuid));
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, decoy1);
-            answerStatement.setBoolean(4, false);
+            answerStatement.setString(4, "N");
             answerStatement.executeUpdate();
 
             UUID decoy2Uuid = UUID.randomUUID();
             answerStatement.setBytes(1, asBytes(decoy2Uuid));
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, decoy2);
-            answerStatement.setBoolean(4, false);
+            answerStatement.setString(4, "N");
             answerStatement.executeUpdate();
 
             UUID decoy3Uuid = UUID.randomUUID();
             answerStatement.setBytes(1, asBytes(decoy3Uuid));
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, decoy3);
-            answerStatement.setBoolean(4, false);
+            answerStatement.setString(4, "N");
             answerStatement.executeUpdate();
 
             answerStatement.close();

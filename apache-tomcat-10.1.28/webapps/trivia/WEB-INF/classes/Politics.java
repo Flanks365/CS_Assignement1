@@ -36,7 +36,7 @@ public class Politics extends HttpServlet {
             return; // Ensure no further processing occurs after redirection
         }
 
-        String categoryName = request.getParameter("category_name");
+        String categoryName = request.getParameter("category_name").trim();
         
         //categoryName="Science";
         if (categoryName == null || categoryName.isEmpty()) {
@@ -56,7 +56,8 @@ public class Politics extends HttpServlet {
             Class.forName("oracle.jdbc.OracleDriver");
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
 
-            PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE category_name = ?");
+            // PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE category_name = ?");
+            PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE UPPER(category_name) = UPPER(?)");
             categoryStmt.setString(1, categoryName);
             ResultSet categoryRs = categoryStmt.executeQuery();
 

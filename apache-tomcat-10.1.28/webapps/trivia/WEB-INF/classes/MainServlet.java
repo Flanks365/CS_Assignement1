@@ -43,14 +43,8 @@ public class MainServlet extends HttpServlet {
 			"</div>\n";
 		}
 		html += "<div style=\"text-align: center;\">\n" +
-            "<form action=\"Quizpage\" method=\"get\">\n" +
-            "<input type=\"hidden\" name=\"category_name\" value=\"Politics\">\n" +
-            "<input type=\"submit\" value=\"Play Politics Quiz\" />\n" +
-            "</form>\n" +
-            "</div>\n";
-		html += "<div style=\"text-align: center;\">\n" +
-		"<form action=\"play\" method=\"GET\">\n" +
-		"<input type=\"submit\" value=\"Quizzes\" />\n" +
+		"<form action=\"categories\" method=\"GET\">\n" +
+		"<input type=\"submit\" value=\"Play Quizzes\" />\n" +
 		"</form>\n" +
 		"</div>\n" +
 		"<div style=\"text-align: center;\">\n" +

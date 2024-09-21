@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.*;
 import java.time.LocalDate;
 import java.lang.StringBuilder;
+import java.net.HttpURLConnection;
 import java.util.Date;
 import java.text.*;
 import java.nio.*;
@@ -69,7 +70,7 @@ public class EditQuestionServlet extends HttpServlet {
                     "<label for=\"content-video\">Video</label><br>" +
                     "Content: " +
                     "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
-                    "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" />" +
+                    "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" required />" +
                     "<br><input type=\"submit\" value=\"Submit\"/>" +
                     "</form>" +
                     "<button id=\"form-toggle\">Create</button>";
@@ -77,7 +78,8 @@ public class EditQuestionServlet extends HttpServlet {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
             PreparedStatement stmt = con
-                    .prepareStatement("select id, question_text, media_type, media_preview from questions where category_id = ?");
+                    .prepareStatement(
+                            "select id, question_text, media_type, media_preview from questions where category_id = ?");
             stmt.setBytes(1, asBytes(quizId));
             ResultSet rs = stmt.executeQuery();
             boolean hasResults = false;
@@ -302,6 +304,38 @@ public class EditQuestionServlet extends HttpServlet {
         }
         response.setStatus(200);
         response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        UUID quizId = UUID.fromString(request.getParameter("id"));
+        String name = request.getParameter("quizName");
+        UUID sid = null;
+        Connection con = null;
+        try {
+            sid = UUID.fromString(request.getParameter("questionId"));
+
+            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
+                    "system", "oracle1");
+
+            PreparedStatement preparedStatement = con
+                    .prepareStatement("delete from questions where id = ?");
+            preparedStatement.setBytes(1, asBytes(sid));
+            int row = preparedStatement.executeUpdate();
+            preparedStatement.close();
+            con.close();
+        } catch (SQLException ex) {
+            while (ex != null) {
+                System.out.println("Message: " + ex.getMessage());
+                System.out.println("SQLState: " + ex.getSQLState());
+                System.out.println("ErrorCode: " + ex.getErrorCode());
+                ex = ex.getNextException();
+                System.out.println("");
+            }
+        }
+        response.setStatus(200);
+        // response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
     }
 
     public static byte[] asBytes(UUID uuid) {

@@ -40,8 +40,8 @@ public class EditQuizzesServlet extends HttpServlet {
                 "<h1 align=\"center\">Edit Quizzes</h1>\n" +
                 "<p>Create a new quiz:</p>" +
                 "<form action=\"editQuizzes\" method=\"POST\" enctype=\"multipart/form-data\">" +
-                "<input id=\"new-quiz-name\" type=\"text\" name=\"QuizName\" placeholder=\"Name\" />" +
-                "Image: <input type=\"file\" name=\"FileName\" accept=\"image/*\" />" +
+                "<input required id=\"new-quiz-name\" type=\"text\" name=\"QuizName\" placeholder=\"Name\" />" +
+                "Image: <input required type=\"file\" name=\"FileName\" accept=\"image/*\" />" +
                 "<input type=\"submit\" value=\"Submit\"/>" +
                 "</form>";
 

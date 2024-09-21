@@ -56,9 +56,15 @@ public class CategoriesServlet extends HttpServlet {
             Statement stmt2 = con.createStatement();
 
             ResultSet categoryRS = stmt2.executeQuery("select * from categories");
+			boolean hasNextTuple = true; //used to check if there is another line in the categories table
+			if (!categoryRS.next()) {
+				html += "<br><br><br><h2 align=\"center\">No quizzes to display</h2>";
+				hasNextTuple = false;
+			}
             html += "<div class=\"categories\">";
 			//loops through all the categories in categories table
-			while (categoryRS.next()) {
+			while (hasNextTuple) {
+				
 				//retrieving blob from database
                 imgType = categoryRS.getString(3);
                 Blob b = categoryRS.getBlob(4);
@@ -73,6 +79,9 @@ public class CategoriesServlet extends HttpServlet {
             	"<input type=\"submit\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\" />\n" +
             	"</form>\n" +
             	"</div><br><br>\n";	
+				if (!categoryRS.next()) {
+					break;
+				}
 			}
 			html += "</div>";
 			html += "<br><br><br><form action=\"main\" method=\"get\">" +  

@@ -19,10 +19,10 @@ public class EditQuestionServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
 
-		if (session == null) {
-			response.setStatus(302);
-			response.sendRedirect("login");
-		}
+        if (session == null) {
+            response.setStatus(302);
+            response.sendRedirect("login");
+        }
         System.out.println();
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
@@ -45,7 +45,7 @@ public class EditQuestionServlet extends HttpServlet {
             String quizName = request.getParameter("quizName");
             Enumeration<String> params = request.getParameterNames();
             System.out.println("params: " + Arrays.toString(request.getParameterValues("quizName")));
-            
+
             UUID quizId = UUID.fromString(request.getParameter("id"));
 
             html += "<h1 align=\"center\">Edit Quiz: " + quizName + "</h1>\n" +
@@ -54,11 +54,11 @@ public class EditQuestionServlet extends HttpServlet {
                     +
                     "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
                     "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
-                    "<input type=\"textarea\" name=\"Question\" placeholder=\"Question\" />" +
-                    "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" />" +
-                    "<input type=\"textarea\" name=\"Decoy1\" placeholder=\"Decoy answer\" />" +
-                    "<input type=\"textarea\" name=\"Decoy2\" placeholder=\"Decoy answer\" />" +
-                    "<input type=\"textarea\" name=\"Decoy3\" placeholder=\"Decoy answer\" /><br>" +
+                    "<input type=\"textarea\" name=\"Question\" placeholder=\"Question\" required />" +
+                    "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" required />" +
+                    "<input type=\"textarea\" name=\"Decoy1\" placeholder=\"Decoy answer\" required />" +
+                    "<input type=\"textarea\" name=\"Decoy2\" placeholder=\"Decoy answer (optional)\" />" +
+                    "<input type=\"textarea\" name=\"Decoy3\" placeholder=\"Decoy answer (optional)\" /><br>" +
                     "Content type: <input type=\"radio\" id=\"content-quote\" name=\"ContentType\" value=\"quote\">" +
                     "<label for=\"content-quote\">Quote</label>" +
                     "<input type=\"radio\" id=\"content-image\" name=\"ContentType\" value=\"image\">" +
@@ -69,7 +69,7 @@ public class EditQuestionServlet extends HttpServlet {
                     "<label for=\"content-video\">Video</label><br>" +
                     "Content: " +
                     "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
-                    "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" />" +
+                    "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" />" +
                     "<br><input type=\"submit\" value=\"Submit\"/>" +
                     "</form>" +
                     "<button id=\"form-toggle\">Create</button>";
@@ -77,12 +77,13 @@ public class EditQuestionServlet extends HttpServlet {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
             PreparedStatement stmt = con
-                    .prepareStatement("select id, question_text from questions where category_id = ?");
+                    .prepareStatement("select id, question_text, media_type, media_preview from questions where category_id = ?");
             stmt.setBytes(1, asBytes(quizId));
             ResultSet rs = stmt.executeQuery();
             boolean hasResults = false;
             byte bArr[] = null;
             UUID sid = null;
+            String[] answers = null;
 
             while (rs.next()) {
                 if (!hasResults) {
@@ -93,6 +94,21 @@ public class EditQuestionServlet extends HttpServlet {
                 byte[] raw = rs.getBytes(1);
                 sid = asUuid(raw);
                 String question = rs.getString(2);
+                String mediaType = rs.getString(3);
+                String mediaPreview = rs.getString(4);
+
+                String corrAns = null, decAns1 = null, decAns2 = null, decAns3 = null;
+                answers = getAnswers(raw);
+                if (answers != null) {
+                    corrAns = answers[0];
+                    decAns1 = answers[1];
+                    decAns2 = answers[2] != null ? answers[2] : "";
+                    decAns3 = answers[3] != null ? answers[3] : "";
+                }
+
+                if (!mediaType.equals("quote")) {
+                    mediaType = mediaType.substring(0, mediaType.indexOf("/"));
+                }
 
                 html += "<div id=\"edit-question-" + sid + "\" class=\"question-edit-container\" " +
                         "questionId=\"" + sid + "\">" + question +
@@ -104,14 +120,15 @@ public class EditQuestionServlet extends HttpServlet {
                         "<input type=\"textarea\" name=\"Question\" placeholder=\"Question text\" " +
                         "value=\"" + question + "\" required />" +
                         "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" " +
-                        "value=\"" + "answer" + "\" required />" +
+                        "value=\"" + corrAns + "\" required />" +
                         "<input type=\"textarea\" name=\"Decoy1\" placeholder=\"Decoy answer\" " +
-                        "value=\"" + "decoy1" + "\" required />" +
+                        "value=\"" + decAns1 + "\" required />" +
                         "<input type=\"textarea\" name=\"Decoy2\" placeholder=\"Decoy answer (optional)\" " +
-                        "value=\"" + "decoy2" + "\" />" +
+                        "value=\"" + decAns2 + "\" />" +
                         "<input type=\"textarea\" name=\"Decoy3\" placeholder=\"Decoy answer (optional)\" " +
-                        "value=\"" + "decoy3" + "\" /><br>" +
+                        "value=\"" + decAns3 + "\" /><br>" +
                         "Content type: " +
+                        "<input type=\"hidden\" name=\"selectedContent\" value=\"" + mediaType + "\" />" +
                         "<input type=\"radio\" class=\"radio-default\" id=\"content-quote\" name=\"ContentType\" value=\"quote\">"
                         +
                         "<label for=\"content-quote\">Quote</label>" +
@@ -122,17 +139,18 @@ public class EditQuestionServlet extends HttpServlet {
                         "<input type=\"radio\" id=\"content-video\" name=\"ContentType\" value=\"video\">" +
                         "<label for=\"content-video\">Video</label><br>" +
                         "Content: " +
+                        "<p>Current: " + mediaPreview + "</p>" +
                         "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
-                        "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" />" +
+                        "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" />" +
                         "<br><input type=\"submit\" value=\"Update\" />" +
                         "</form>" +
                         "<button class=\"question-edit-toggle\" id=\"question-edit-toggle-" + sid + "\">Edit</button>" +
                         "<button class=\"question-delete\" id=\"question-delete-" + sid + "\">Delete</button><br>" +
                         "</div>";
             }
-            html += "<br><br><br><form action=\"editQuizzes\" method=\"get\">" +  
-			"<input type=\"submit\" value=\"Back to Edit Quizzes Page\"/>\n" +
-			"</form>";
+            html += "<br><br><br><form action=\"editQuizzes\" method=\"get\">" +
+                    "<input type=\"submit\" value=\"Back to Edit Quizzes Page\"/>\n" +
+                    "</form>";
             stmt.close();
             con.close();
         } catch (SQLException ex) {
@@ -162,11 +180,12 @@ public class EditQuestionServlet extends HttpServlet {
         String question = request.getParameter("Question");
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");
+        String contentPreview = null;
         UUID sid = null;
         byte[] sidRaw = null;
         if (request.getParameter("questionId") != null) {
             sid = UUID.fromString(request.getParameter("questionId"));
-            sidRaw = asBytes(sid);            
+            sidRaw = asBytes(sid);
         }
 
         String answer = request.getParameter("Answer");
@@ -174,8 +193,7 @@ public class EditQuestionServlet extends HttpServlet {
         String decoy2 = request.getParameter("Decoy2");
         String decoy3 = request.getParameter("Decoy3");
 
-        
-        System.out.println("questionId: " + sid);          
+        System.out.println("questionId: " + sid);
         System.out.println("answer: " + answer);
         System.out.println("decoy1: " + decoy1);
         System.out.println("decoy2: " + decoy2);
@@ -184,9 +202,11 @@ public class EditQuestionServlet extends HttpServlet {
         InputStream is;
         if (!contentType.equals("quote")) {
             contentType = filePart.getContentType();
+            contentPreview = filePart.getSubmittedFileName();
             is = filePart.getInputStream();
         } else {
             String quote = request.getParameter("QuoteText");
+            contentPreview = quote;
             is = new ByteArrayInputStream(quote.getBytes(StandardCharsets.UTF_8));
         }
 
@@ -209,20 +229,21 @@ public class EditQuestionServlet extends HttpServlet {
                 deleteQuestionStatement.setBytes(1, sidRaw);
                 deleteQuestionStatement.executeUpdate();
                 deleteQuestionStatement.close();
-                
+
             }
 
             PreparedStatement preparedStatement = con
                     .prepareStatement(
                             "INSERT INTO questions (" +
-                                    "id, category_id, question_text, media_type, media_content" +
-                                    ") VALUES (?,?,?,?,?)");
+                                    "id, category_id, question_text, media_type, media_content, media_preview" +
+                                    ") VALUES (?,?,?,?,?,?)");
             UUID uuid = UUID.randomUUID();
             preparedStatement.setBytes(1, asBytes(uuid));
             preparedStatement.setBytes(2, asBytes(quizId));
             preparedStatement.setString(3, question);
             preparedStatement.setString(4, contentType);
             preparedStatement.setBinaryStream(5, is);
+            preparedStatement.setString(6, contentPreview);
 
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
@@ -230,13 +251,14 @@ public class EditQuestionServlet extends HttpServlet {
             PreparedStatement answerStatement = con
                     .prepareStatement(
                             "INSERT INTO answers (" +
-                                    "id, question_id, answer_text, is_correct" +
-                                    ") VALUES (?,?,?,?)");
+                                    "id, question_id, answer_text, is_correct, answer_index" +
+                                    ") VALUES (?,?,?,?,?)");
             UUID answerUuid = UUID.randomUUID();
             answerStatement.setBytes(1, asBytes(answerUuid));
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, answer);
             answerStatement.setString(4, "Y");
+            answerStatement.setInt(5, 0);
             answerStatement.executeUpdate();
 
             UUID decoy1Uuid = UUID.randomUUID();
@@ -244,21 +266,28 @@ public class EditQuestionServlet extends HttpServlet {
             answerStatement.setBytes(2, asBytes(uuid));
             answerStatement.setString(3, decoy1);
             answerStatement.setString(4, "N");
+            answerStatement.setInt(5, 1);
             answerStatement.executeUpdate();
 
-            UUID decoy2Uuid = UUID.randomUUID();
-            answerStatement.setBytes(1, asBytes(decoy2Uuid));
-            answerStatement.setBytes(2, asBytes(uuid));
-            answerStatement.setString(3, decoy2);
-            answerStatement.setString(4, "N");
-            answerStatement.executeUpdate();
+            if (decoy2 != null && !decoy2.trim().equals("")) {
+                UUID decoy2Uuid = UUID.randomUUID();
+                answerStatement.setBytes(1, asBytes(decoy2Uuid));
+                answerStatement.setBytes(2, asBytes(uuid));
+                answerStatement.setString(3, decoy2);
+                answerStatement.setString(4, "N");
+                answerStatement.setInt(5, 2);
+                answerStatement.executeUpdate();
+            }
 
-            UUID decoy3Uuid = UUID.randomUUID();
-            answerStatement.setBytes(1, asBytes(decoy3Uuid));
-            answerStatement.setBytes(2, asBytes(uuid));
-            answerStatement.setString(3, decoy3);
-            answerStatement.setString(4, "N");
-            answerStatement.executeUpdate();
+            if (decoy3 != null && !decoy3.trim().equals("")) {
+                UUID decoy3Uuid = UUID.randomUUID();
+                answerStatement.setBytes(1, asBytes(decoy3Uuid));
+                answerStatement.setBytes(2, asBytes(uuid));
+                answerStatement.setString(3, decoy3);
+                answerStatement.setString(4, "N");
+                answerStatement.setInt(5, 3);
+                answerStatement.executeUpdate();
+            }
 
             answerStatement.close();
             con.close();
@@ -275,66 +304,6 @@ public class EditQuestionServlet extends HttpServlet {
         response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
     }
 
-    // @Override
-    // protected void doPut(HttpServletRequest request, HttpServletResponse
-    // response)
-    // throws ServletException, IOException {
-
-    // UUID quizId = UUID.fromString(request.getParameter("id"));
-    // String name = request.getParameter("QuizName");
-    // String question = request.getParameter("Question");
-    // String answer = request.getParameter("Answer");
-    // String decoy1 = request.getParameter("Decoy1");
-    // String decoy2 = request.getParameter("Decoy2");
-    // String decoy3 = request.getParameter("Decoy3");
-    // Part filePart = request.getPart("FileName");
-    // String contentType = request.getParameter("ContentType");
-    // InputStream is;
-    // if (contentType != "quote") {
-    // contentType = filePart.getContentType();
-    // is = filePart.getInputStream();
-    // } else {
-    // String quote = request.getParameter("QuoteText");
-    // is = new ByteArrayInputStream(quote.getBytes(StandardCharsets.UTF_8));
-    // }
-
-    // Connection con = null;
-    // try {
-    // con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-    // "system", "oracle1");
-    // PreparedStatement preparedStatement = con
-    // .prepareStatement(
-    // "INSERT INTO questions (" +
-    // "id, quiz_id, question, answer, decoy1, decoy2, decoy3, content_type,
-    // content" +
-    // ") VALUES (?,?,?,?,?,?,?,?,?)");
-    // UUID uuid = UUID.randomUUID();
-    // preparedStatement.setBytes(1, asBytes(uuid));
-    // preparedStatement.setBytes(2, asBytes(quizId));
-    // preparedStatement.setString(3, question);
-    // preparedStatement.setString(4, answer);
-    // preparedStatement.setString(5, decoy1);
-    // preparedStatement.setString(6, decoy2);
-    // preparedStatement.setString(7, decoy3);
-    // preparedStatement.setString(8, contentType);
-    // preparedStatement.setBinaryStream(9, is);
-
-    // int row = preparedStatement.executeUpdate();
-    // preparedStatement.close();
-    // con.close();
-    // } catch (SQLException ex) {
-    // while (ex != null) {
-    // System.out.println("Message: " + ex.getMessage());
-    // System.out.println("SQLState: " + ex.getSQLState());
-    // System.out.println("ErrorCode: " + ex.getErrorCode());
-    // ex = ex.getNextException();
-    // System.out.println("");
-    // }
-    // }
-    // response.setStatus(200);
-    // response.sendRedirect("/trivia/editQuiz?id=" + quizId + "&quizName=" + name);
-    // }
-
     public static byte[] asBytes(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
@@ -347,5 +316,48 @@ public class EditQuestionServlet extends HttpServlet {
         long firstLong = bb.getLong();
         long secondLong = bb.getLong();
         return new UUID(firstLong, secondLong);
+    }
+
+    public static String[] getAnswers(byte[] questionId) {
+        Connection con = null;
+        String[] answers = { null, null, null, null };
+        String errMsg = null;
+
+        try {
+            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
+                    "system", "oracle1");
+            PreparedStatement stmt = con
+                    .prepareStatement(
+                            "select answer_text, is_correct, answer_index from answers where question_id = ?");
+            stmt.setBytes(1, questionId);
+            ResultSet rs = stmt.executeQuery();
+
+            String aText;
+            String isCorr;
+            int aIdx;
+            while (rs.next()) {
+                aText = rs.getString(1);
+                isCorr = rs.getString(2);
+                aIdx = rs.getInt(3);
+
+                answers[aIdx] = aText;
+            }
+
+            stmt.close();
+            con.close();
+        } catch (SQLException ex) {
+
+            errMsg = errMsg + "\n--- SQLException caught ---\n";
+            while (ex != null) {
+                errMsg += "Message: " + ex.getMessage();
+                errMsg += "SQLState: " + ex.getSQLState();
+                errMsg += "ErrorCode: " + ex.getErrorCode();
+                ex = ex.getNextException();
+                errMsg += "";
+            }
+            System.out.println(errMsg);
+        }
+
+        return answers;
     }
 }

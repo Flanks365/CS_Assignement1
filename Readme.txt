@@ -12,6 +12,7 @@ Table creation script:
         question_text VARCHAR(255),
         media_type VARCHAR(50),  -- "image" or "audio"
         media_content BLOB,    -- media in base64
+	media_preview VARCHAR(200),
         category_id RAW(16) NOT NULL,
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     );
@@ -21,6 +22,7 @@ CREATE TABLE answers (
         question_id RAW(16) NOT NULL,
         answer_text VARCHAR(255),
         is_correct CHAR(1), -- Use 'Y' for true, 'N' for false
+	answer_index INT,
         FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
     );
 CREATE TABLE users (

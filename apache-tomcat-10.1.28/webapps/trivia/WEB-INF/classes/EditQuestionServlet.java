@@ -1,15 +1,13 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
-import java.io.PrintWriter;
+
 import java.sql.*;
 import java.io.*;
 import java.util.*;
 import java.time.LocalDate;
 import java.lang.StringBuilder;
-import java.util.Base64;
 import java.util.Date;
-import java.util.UUID;
 import java.text.*;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
@@ -155,14 +153,20 @@ public class EditQuestionServlet extends HttpServlet {
         String question = request.getParameter("Question");
         Part filePart = request.getPart("FileName");
         String contentType = request.getParameter("ContentType");
+        UUID sid = null;
+        byte[] sidRaw = null;
+        if (request.getParameter("questionId") != null) {
+            sid = UUID.fromString(request.getParameter("questionId"));
+            sidRaw = asBytes(sid);            
+        }
 
-        String sid = request.getParameter("questionId");
         String answer = request.getParameter("Answer");
         String decoy1 = request.getParameter("Decoy1");
         String decoy2 = request.getParameter("Decoy2");
         String decoy3 = request.getParameter("Decoy3");
 
-        System.out.println("questionId: " + sid);
+        
+        System.out.println("questionId: " + sid);          
         System.out.println("answer: " + answer);
         System.out.println("decoy1: " + decoy1);
         System.out.println("decoy2: " + decoy2);
@@ -181,6 +185,24 @@ public class EditQuestionServlet extends HttpServlet {
         try {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
+
+            if (sidRaw != null) {
+                PreparedStatement deleteStatement = con
+                        .prepareStatement(
+                                "DELETE FROM answers WHERE question_id = ?");
+                deleteStatement.setBytes(1, sidRaw);
+                deleteStatement.executeUpdate();
+                deleteStatement.close();
+
+                PreparedStatement deleteQuestionStatement = con
+                        .prepareStatement(
+                                "DELETE FROM questions WHERE id = ?");
+                deleteQuestionStatement.setBytes(1, sidRaw);
+                deleteQuestionStatement.executeUpdate();
+                deleteQuestionStatement.close();
+                
+            }
+
             PreparedStatement preparedStatement = con
                     .prepareStatement(
                             "INSERT INTO questions (" +
@@ -195,32 +217,6 @@ public class EditQuestionServlet extends HttpServlet {
 
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
-
-            PreparedStatement checkStatement = con
-                    .prepareStatement(
-                            "SELECT id FROM questions WHERE id = ?");
-            checkStatement.setString(1, sid);
-            ResultSet rs = checkStatement.executeQuery();
-            checkStatement.close();
-
-            if (!rs.next()) {
-                System.out.println("Question not inserted");
-                PreparedStatement deleteStatement = con
-                        .prepareStatement(
-                                "DELETE FROM answers WHERE question_id = ?");
-                deleteStatement.setString(1, sid);
-                deleteStatement.executeUpdate();
-                deleteStatement.close();
-
-
-                PreparedStatement deleteQuestionStatement = con
-                        .prepareStatement(
-                                "DELETE FROM questions WHERE id = ?");
-                deleteQuestionStatement.setString(1, sid);
-                deleteQuestionStatement.executeUpdate();
-                deleteQuestionStatement.close();
-                return;
-            }
 
             PreparedStatement answerStatement = con
                     .prepareStatement(

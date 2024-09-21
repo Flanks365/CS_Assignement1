@@ -32,3 +32,10 @@ input[type="submit"] {
 input[type="submit"]:hover {
   background-color: rgb(147, 147, 147);
 }
+
+.categories {
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:center;
+}

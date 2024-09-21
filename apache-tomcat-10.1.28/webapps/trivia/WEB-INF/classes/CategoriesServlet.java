@@ -56,7 +56,7 @@ public class CategoriesServlet extends HttpServlet {
             Statement stmt2 = con.createStatement();
 
             ResultSet categoryRS = stmt2.executeQuery("select * from categories");
-            html += "<div style=\"display:flex;flex-direction:row;flex-wrap:wrap;justify-contents:center\">";
+            html += "<div class=\"categories\">";
 			//loops through all the categories in categories table
 			while (categoryRS.next()) {
 				//retrieving blob from database
@@ -64,15 +64,15 @@ public class CategoriesServlet extends HttpServlet {
                 Blob b = categoryRS.getBlob(4);
 				bArr = b.getBytes(1, (int) b.length());
 				
-				html += "<div style=\"display:flex;\">\n";
+				html += "<br><br><div style=\"display:flex;\">\n";
 				
             	html += "<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
 				"<img src=\"data:" + imgType + ";base64," +
-                    Base64.getEncoder().encodeToString(bArr) + "\" style=\"width:180px;height:300px;align-items:center;\"/>" +
+                    Base64.getEncoder().encodeToString(bArr) + "\" style=\"width:180px;height:300px;\"/>" +
             	"<input type=\"hidden\" name=\"category_name\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\">\n" +
             	"<input type=\"submit\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\" />\n" +
             	"</form>\n" +
-            	"</div>\n";	
+            	"</div><br><br>\n";	
 			}
 			html += "</div>";
 			html += "<br><br><br><form action=\"main\" method=\"get\">" +  

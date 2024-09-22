@@ -39,9 +39,9 @@ document.querySelectorAll('.question-edit-container').forEach(container => {
     }
 
     // Set up delete button
-    const quizId = container.querySelector('input[name="id"').value
-    const quizName = container.querySelector('input[name="quizName"').value
-    const questionId = container.querySelector('input[name="questionId"').value
+    const quizId = container.querySelector('input[name="id"]').value
+    const quizName = container.querySelector('input[name="quizName"]').value
+    const questionId = container.querySelector('input[name="questionId"]').value
     document.getElementById('question-edit-toggle-' + container.attributes.questionid.value).addEventListener('click', toggleEditForm)
     container.querySelector('.question-delete').addEventListener('click', function() {
         const url = '/trivia/editQuestions?id=' + quizId + '&quizName=' + quizName + '&questionId=' + questionId
@@ -53,7 +53,7 @@ document.querySelectorAll('.question-edit-container').forEach(container => {
             if (response.ok) {
                 return
             }
-            throw new Error('Network response was not ok.');
+            throw new Error('Fetch delete failed.');
         })
         .then(() => {
             location.reload()

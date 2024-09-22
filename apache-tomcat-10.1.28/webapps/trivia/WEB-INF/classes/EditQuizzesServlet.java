@@ -39,11 +39,15 @@ public class EditQuizzesServlet extends HttpServlet {
                 "<body>\n" +
                 "<h1 align=\"center\">Edit Quizzes</h1>\n" +
                 "<p>Create a new quiz:</p>" +
-                "<form action=\"editQuizzes\" method=\"POST\" enctype=\"multipart/form-data\">" +
+                "<div id=\"create-quiz-container\">" +
+                "<form id=\"create-quiz-form\" action=\"editQuizzes\" method=\"POST\" enctype=\"multipart/form-data\">"
+                +
                 "<input required id=\"new-quiz-name\" type=\"text\" name=\"QuizName\" placeholder=\"Name\" />" +
                 "Image: <input required type=\"file\" name=\"FileName\" accept=\"image/*\" />" +
                 "<input type=\"submit\" value=\"Submit\"/>" +
-                "</form>";
+                "</form>" +
+                "<button id=\"quiz-create-button\" value=\"Create\">Create</button>\n" +
+                "</div>\n";
 
         String errMsg = "";
         Connection con = null;
@@ -55,7 +59,7 @@ public class EditQuizzesServlet extends HttpServlet {
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
                     "system", "oracle1");
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select * from categories");
+            ResultSet rs = stmt.executeQuery("select id, category_name from categories");
             boolean hasResults = false;
             byte bArr[] = null;
             UUID sid = null;
@@ -70,16 +74,25 @@ public class EditQuizzesServlet extends HttpServlet {
                 byte[] raw = rs.getBytes(1);
                 sid = asUuid(raw);
                 name = rs.getString(2);
-                html += name + "<form action=\"editQuestions\" method=\"GET\">\n" +
+                System.out.println(name);
+                html += name + "<div class=\"quiz-edit-container\">" +
+                        "<form class=\"quiz-edit-form\" action=\"editQuizzes\" method=\"POST\" enctype=\"multipart/form-data\" >\n"
+                        +
                         "<input type=\"hidden\" name=\"id\" value=\"" + sid + "\" />" +
                         "<input type=\"hidden\" name=\"quizName\" value=\"" + name + "\" />" +
-                        "<input type=\"submit\" value=\"Edit\" />\n" +
-                        "<input class=\"quiz-delete-button\" type=\"submit\" value=\"Delete\" />\n" +
-                        "</form>\n";
+                        "<input required id=\"new-quiz-name\" type=\"text\" name=\"QuizName\" " +
+                        "value=\"" + name + "\" placeholder=\"Name\" />" +
+                        "Image: <input required type=\"file\" name=\"FileName\" accept=\"image/*\" />" +
+                        "<input type=\"submit\" value=\"Submit\"/>" +
+                        "</form>" +
+                        "<button class=\"quiz-edit-button\" value=\"Edit\">Edit</button>\n" +
+                        "<button class=\"quiz-questions-button\" value=\"Questions\">Edit Questions</button>\n" +
+                        "<button class=\"quiz-delete-button\" value=\"Delete\">Delete</button>\n" +
+                        "</div>\n";
             }
-            html += "<br><br><br><form action=\"main\" method=\"get\">" +  
-			"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
-			"</form>";
+            html += "<br><br><br><form action=\"main\" method=\"get\">" +
+                    "<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
+                    "</form>";
             stmt.close();
             con.close();
         } catch (SQLException ex) {
@@ -93,7 +106,7 @@ public class EditQuizzesServlet extends HttpServlet {
                 errMsg += "";
             }
             System.out.println(errMsg);
-            // response.sendRedirect("/signup");
+            return;
         }
 
         html += "</body></html>";
@@ -109,16 +122,30 @@ public class EditQuizzesServlet extends HttpServlet {
         String contentType = filePart.getContentType();
         String fileName = filePart.getSubmittedFileName();
         Connection con = null;
+        UUID quizId = null;
+
         try {
+            try {
+                quizId = UUID.fromString(request.getParameter("id"));
+                asBytes(quizId);
+            } catch (Exception ex) {
+                System.out.println("Error: " + ex.getMessage());
+            }
+
+            String stmt = null;
+            if (quizId != null) {
+                stmt = "UPDATE categories SET category_name = ?, image_type = ?, image = ? where id = ?";
+            } else {
+                stmt = "INSERT INTO categories (category_name, image_type, image, id) VALUES (?,?,?,?)";
+                quizId = UUID.randomUUID();
+            }
+
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-            PreparedStatement preparedStatement = con
-                    .prepareStatement("INSERT INTO categories (id, category_name, image_type, image) VALUES (?,?,?,?)");
-            UUID uuid = UUID.randomUUID();
-            preparedStatement.setBytes(1, asBytes(uuid));
-            preparedStatement.setString(2, name);
-            preparedStatement.setString(3, contentType);
-            // System.out.println(filePart.getInputStream());
-            preparedStatement.setBinaryStream(4, filePart.getInputStream());
+            PreparedStatement preparedStatement = con.prepareStatement(stmt);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, contentType);
+            preparedStatement.setBinaryStream(3, filePart.getInputStream());
+            preparedStatement.setBytes(4, asBytes(quizId));
             int row = preparedStatement.executeUpdate();
             preparedStatement.close();
             con.close();
@@ -139,17 +166,22 @@ public class EditQuizzesServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, java.io.IOException {
         System.out.println("In doDelete");
-        String name = request.getParameter("QuizName");
-        UUID quizId = UUID.fromString(request.getParameter("id"));
-        // Part filePart = request.getPart("FileName");
-        // String contentType = filePart.getContentType();
-        // String fileName = filePart.getSubmittedFileName();
+        System.out.println(request.getParameter("id"));
+        UUID quizId = null;
         Connection con = null;
-        System.out.println(name);
         try {
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-            System.out.println("In try block");
-            
+            quizId = UUID.fromString(request.getParameter("id"));
+
+            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
+                    "system", "oracle1");
+
+            PreparedStatement preparedStatement = con
+                    .prepareStatement("delete from categories where id = ?");
+            preparedStatement.setBytes(1, asBytes(quizId));
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+            con.close();
+
         } catch (SQLException ex) {
             while (ex != null) {
                 System.out.println("Message: " + ex.getMessage());
@@ -160,7 +192,6 @@ public class EditQuizzesServlet extends HttpServlet {
             }
         }
         response.setStatus(200);
-        response.sendRedirect("/trivia/editQuizzes");
     }
 
     public static byte[] asBytes(UUID uuid) {

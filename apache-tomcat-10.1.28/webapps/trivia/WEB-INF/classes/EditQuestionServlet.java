@@ -309,8 +309,8 @@ public class EditQuestionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        UUID quizId = UUID.fromString(request.getParameter("id"));
-        String name = request.getParameter("quizName");
+        // UUID quizId = UUID.fromString(request.getParameter("id"));
+        // String name = request.getParameter("quizName");
         UUID sid = null;
         Connection con = null;
         try {

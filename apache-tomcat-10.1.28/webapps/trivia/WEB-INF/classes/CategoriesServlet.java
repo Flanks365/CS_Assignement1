@@ -50,12 +50,6 @@ public class CategoriesServlet extends HttpServlet {
 			"</div>\n";
 		}
 		html += "<div style=\"text-align: center;\">\n" +
-		"<form action=\"Quizpage\" method=\"GET\">\n" +
-		"<input type=\"hidden\" name=\"autoplay\" value=\"true\">" +
-		"<input type=\"submit\" value=\"Autoplay All\" />\n" +
-		"</form>\n" +
-		"</div>\n" +
-		"<div style=\"text-align: center;\">\n" +
 		"<form action=\"logout\" method=\"GET\">\n" +
 		"<input type=\"submit\" value=\"LOGOUT\" />\n" +
 		"</form>\n" +

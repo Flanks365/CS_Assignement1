@@ -13,8 +13,13 @@ public class LoginServlet extends HttpServlet {
             + "<h1 align=\"center\">" + "Login here" + "</h1>\n" + "<form action=\"login\" method=\"POST\">\n"
             + "Username: <input type=\"text\" name=\"username\">\n" + "<br />\n"
             + "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
-            + "<input type=\"submit\" value=\"Sign in\" />\n" + "</form>\n"
-            + "</form>\n" + "</body>\n</html\n");
+            + "<input type=\"submit\" value=\"Log in\" />\n" + "</form>\n"
+            + "</form>\n"  
+            + "<div style=\"text-align: center;\">\n" 
+		      + "<form action=\"signup\" method=\"GET\">\n" 
+		      + "<input type=\"submit\" value=\"Sign up\" />\n" 
+		      + "</form>\n" 
+		      + "</div>\n" + "</body>\n</html\n");
 
    }
 

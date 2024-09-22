@@ -15,7 +15,12 @@ public class SignupServlet extends HttpServlet {
             + "Username: <input type=\"text\" name=\"user_id\">\n" + "<br />\n"
             + "Password: <input type=\"password\" name=\"password\" />\n" + "<br />\n"
             + "<input type=\"submit\" value=\"Sign up\" />\n" + "</form>\n"
-            + "</form>\n" + "</body>\n</html\n");
+            + "</form>\n" 
+            + "<div style=\"text-align: center;\">\n" 
+            + "<form action=\"login\" method=\"GET\">\n" 
+            + "<input type=\"submit\" value=\"Log in\" />\n" 
+            + "</form>\n" 
+            + "</div>\n"+ "</body>\n</html\n");
 
    }
 

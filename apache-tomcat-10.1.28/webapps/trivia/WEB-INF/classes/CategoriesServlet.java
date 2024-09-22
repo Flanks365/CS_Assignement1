@@ -76,6 +76,7 @@ public class CategoriesServlet extends HttpServlet {
 				"<img src=\"data:" + imgType + ";base64," +
                     Base64.getEncoder().encodeToString(bArr) + "\" style=\"width:180px;height:300px;\"/>" +
             	"<input type=\"hidden\" name=\"category_name\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\">\n" +
+							"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
             	"<input type=\"submit\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\" />\n" +
             	"</form>\n" +
             	"</div><br><br>\n";	

@@ -36,47 +36,66 @@ public class Politics extends HttpServlet {
             return; // Ensure no further processing occurs after redirection
         }
 
-        String categoryName = request.getParameter("category_name").trim();
+        String categoryName = "";
+        Boolean autoplay = Boolean.parseBoolean(request.getParameter("autoplay"));
         
-        //categoryName="Science";
-        if (categoryName == null || categoryName.isEmpty()) {
-            response.getWriter().write("Category not provided.");
-            return;
+        if (!autoplay) {
+            //categoryName="Science";
+            categoryName = request.getParameter("category_name").trim();
+            if (categoryName == null || categoryName.isEmpty()) {
+                response.getWriter().write("Category not provided.");
+                return;
+            }
         }
 
         String indexParam = request.getParameter("currentQuestionIndex");
         int currentQuestionIndex = (indexParam != null) ? Integer.parseInt(indexParam) : 0;
-
-        String title = categoryName + " Quiz";
+        String title = "";
+        if (!autoplay) {
+            title = categoryName + " Quiz";
+        } else {
+            title = "Autoplaying";
+        }
+        
         response.setContentType("text/html");
 
         StringBuilder questionHtml = new StringBuilder();
         Connection con = null;
         String mediaContentBase64 = "";
+        String correctAnswerID = "";
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
 
-            // PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE category_name = ?");
-            PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE UPPER(category_name) = UPPER(?)");
-            categoryStmt.setString(1, categoryName);
-            ResultSet categoryRs = categoryStmt.executeQuery();
+            PreparedStatement questionStmt;
+            ResultSet questionRs;
+            if (!autoplay) {
+                PreparedStatement categoryStmt = con.prepareStatement("SELECT id FROM categories WHERE UPPER(category_name) = UPPER(?)");
+                categoryStmt.setString(1, categoryName);
+                ResultSet categoryRs = categoryStmt.executeQuery();
 
-            if (!categoryRs.next()) {
-                response.getWriter().write("Invalid category name.");
-                return;
+                if (!categoryRs.next()) {
+                    response.getWriter().write("Invalid category name.");
+                    return;
+                }
+                
+                byte[] categoryIdRaw = categoryRs.getBytes("id");
+
+                UUID categoryId = asUuid(categoryIdRaw);
+
+                questionStmt = con.prepareStatement(
+                    "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = ?) WHERE rnum = ?");
+                questionStmt.setBytes(1, categoryIdRaw);
+                questionStmt.setInt(2, currentQuestionIndex + 1);
+                questionRs = questionStmt.executeQuery();
+            } else {
+                questionStmt = con.prepareStatement(
+                    "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q) WHERE rnum = ?");
+                    System.out.println("Current Question Index: " + currentQuestionIndex);
+                questionStmt.setInt(1, currentQuestionIndex + 1);
+                questionRs = questionStmt.executeQuery();
             }
 
-            byte[] categoryIdRaw = categoryRs.getBytes("id");
-
-            UUID categoryId = asUuid(categoryIdRaw);
-
-            PreparedStatement questionStmt = con.prepareStatement(
-                "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = ?) WHERE rnum = ?");
-            questionStmt.setBytes(1, categoryIdRaw);
-            questionStmt.setInt(2, currentQuestionIndex + 1);
-            ResultSet questionRs = questionStmt.executeQuery();
-            
             if (questionRs.next()) {
                 String questionId = questionRs.getString("id");
                 byte[] questionIdRaw = questionRs.getBytes("id");
@@ -120,9 +139,25 @@ public class Politics extends HttpServlet {
                     System.out.println("Answer ID: " + answerId);  // Log raw answer ID
 
                     questionHtml.append("<button onclick='selectAnswer(\"").append(answerId).append("\", \"")
-                                .append(questionId).append("\", ").append(currentQuestionIndex).append(")'>")
-                                .append(answerText).append("</button>");
+                                .append(questionId).append("\", ").append(currentQuestionIndex).append(")'");
+                    if (autoplay) {
+                        questionHtml.append("id=\""+ answerId +"\" disabled>");
+                    } else {
+                        questionHtml.append(">");
+                    }
+                    questionHtml.append(answerText).append("</button>");
                 }
+                if (autoplay) {
+                    PreparedStatement correctAnswerStmt = con.prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'Y'");
+                    correctAnswerStmt.setBytes(1, questionIdRaw);
+                    ResultSet correctAnswerRs = correctAnswerStmt.executeQuery();
+                    if (correctAnswerRs.next()) {
+                        correctAnswerID = correctAnswerRs.getString("id");
+                    }
+                    correctAnswerRs.close();
+                    correctAnswerStmt.close();
+                }
+
                 questionHtml.append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
                 questionHtml.append("<br><br><button onclick=\"window.location.href='categories'\">Back to Play Quizzes</button>");
                 questionHtml.append("</div></div>");
@@ -146,9 +181,28 @@ public class Politics extends HttpServlet {
                 }
             }
         }
-
+        String script = "";
+        if (autoplay) {
+            script = "let clock = document.getElementById('"+ correctAnswerID +"');" +
+            "let secondsRemaining = 4;" +
+            "const myInterval = setInterval(()=>{" + 
+                "secondsRemaining--;" + 
+                "if(!secondsRemaining)" + 
+                    "startAnimation();" + 
+                "},1000);" +
+            "function startAnimation(){" + 
+                "clock.classList.add('animation');" +
+                "clearInterval(myInterval);" +
+                "setTimeout(()=>{" + 
+                    "clock.classList.remove('animation');" + 
+                    "clock.disabled = false;" + 
+                    "clock.click();" +
+                "}, 5000);" + 
+                "clock.classList.add('done');" +
+            "};";
+        }
         PrintWriter out = response.getWriter();
-        out.println("<!DOCTYPE html>\n" +
+        String finalHtml = "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
                 "<head>\n" +
                 "    <meta charset=\"UTF-8\">\n" +
@@ -175,16 +229,22 @@ public class Politics extends HttpServlet {
                 "                 alert(result)\n" +
                 "                    if (result === 'correct') {\n" +
                 "                        alert('Moving to the next question.');\n" +
-                "                        window.location.href = 'Quizpage?category_name=" + categoryName + "&currentQuestionIndex=' + (currentIndex + 1);\n" +
+                "                        window.location.href = 'Quizpage?category_name=" + categoryName +
+                                         "&autoplay="+ autoplay + "&currentQuestionIndex=' + (currentIndex + 1);\n" +
                 "                    } else {\n" +
                 "                        alert('Try Again.');\n" +
                 "                    }\n" +
                 "                })\n" +
                 "                .catch(error => console.error('Error checking the answer:', error));\n" +
-                "        }\n" +
+                "        }\n";
+                if (autoplay) {
+                    finalHtml += script;
+                }
+                finalHtml +=
                 "    </script>\n" +
                 "</body>\n" +
-                "</html>");
+                "</html>";
+        out.println(finalHtml);
     }
 
     public static UUID asUuid(byte[] bytes) {

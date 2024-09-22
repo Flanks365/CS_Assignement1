@@ -48,6 +48,12 @@ public class MainServlet extends HttpServlet {
 		"</form>\n" +
 		"</div>\n" +
 		"<div style=\"text-align: center;\">\n" +
+		"<form action=\"Quizpage\" method=\"GET\">\n" +
+		"<input type=\"hidden\" name=\"autoplay\" value=\"true\">" +
+		"<input type=\"submit\" value=\"Autoplay\" />\n" +
+		"</form>\n" +
+		"</div>\n" +
+		"<div style=\"text-align: center;\">\n" +
 		"<form action=\"logout\" method=\"GET\">\n" +
 		"<input type=\"submit\" value=\"LOGOUT\" />\n" +
 		"</form>\n" +

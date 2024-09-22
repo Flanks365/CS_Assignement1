@@ -26,6 +26,7 @@ public class CategoriesServlet extends HttpServlet {
 		if (session == null) {
 			response.setStatus(302);
 			response.sendRedirect("login");
+			return;
 		}
 		String title = "Select quiz";
 		response.setContentType("text/html");
@@ -34,7 +35,33 @@ public class CategoriesServlet extends HttpServlet {
 		String html = docType + "<html>\n" + "<head><title>" + title + "</title>"
     + "<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" + 
 	"</head>\n"
-		+ "<body bgcolor=\"#f0f0f0\">\n" + "<h1 align=\"center\">" + title + "</h1>\n";
+		+ "<body bgcolor=\"#f0f0f0\">\n";
+
+		html += "<div id=\"controlButtons\">";
+
+		String role = (String) session.getAttribute("ROLE");
+
+		if (role.equals("admin")) {
+			System.out.println("in admin");
+			html += "<div style=\"text-align: center;\">\n" +
+			"<form action=\"editQuizzes\" method=\"GET\">\n" +
+			"<input type=\"submit\" value=\"Edit Quizzes\" />\n" +
+			"</form>\n" +
+			"</div>\n";
+		}
+		html += "<div style=\"text-align: center;\">\n" +
+		"<form action=\"Quizpage\" method=\"GET\">\n" +
+		"<input type=\"hidden\" name=\"autoplay\" value=\"true\">" +
+		"<input type=\"submit\" value=\"Autoplay All\" />\n" +
+		"</form>\n" +
+		"</div>\n" +
+		"<div style=\"text-align: center;\">\n" +
+		"<form action=\"logout\" method=\"GET\">\n" +
+		"<input type=\"submit\" value=\"LOGOUT\" />\n" +
+		"</form>\n" +
+		"</div>\n" + "</body></html>";
+
+		html += "</div>" + "<h1 align=\"center\">" + title + "</h1>\n";
 
         String errMsg = "";
         Connection con = null;
@@ -70,14 +97,20 @@ public class CategoriesServlet extends HttpServlet {
                 Blob b = categoryRS.getBlob(4);
 				bArr = b.getBytes(1, (int) b.length());
 				
-				html += "<br><br><div style=\"display:flex;\">\n";
+				html += "<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n";
 				
-            	html += "<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
-				"<img src=\"data:" + imgType + ";base64," +
-                    Base64.getEncoder().encodeToString(bArr) + "\" style=\"width:180px;height:300px;\"/>" +
+            	html += "<h3>" + categoryRS.getString("CATEGORY_NAME") + "</h3>\n" +
+				"<img class=\"categoryImg\" src=\"data:" + imgType + ";base64," +
+                    Base64.getEncoder().encodeToString(bArr) + "\" />" +
+				"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
             	"<input type=\"hidden\" name=\"category_name\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\">\n" +
 							"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
-            	"<input type=\"submit\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\" />\n" +
+            	"<input type=\"submit\" value=\" Play Quiz" + "\" />\n" +
+            	"</form>\n" +
+				"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
+            	"<input type=\"hidden\" name=\"category_name\" value=\" " + categoryRS.getString("CATEGORY_NAME") + "\">\n" +
+							"<input type=\"hidden\" name=\"autoplay\" value=\"true\">\n" +
+            	"<input type=\"submit\" value=\"Autoplay Quiz\" />\n" +
             	"</form>\n" +
             	"</div><br><br>\n";	
 				if (!categoryRS.next()) {

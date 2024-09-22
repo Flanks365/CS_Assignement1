@@ -52,6 +52,7 @@ public class Politics extends HttpServlet {
 
         StringBuilder questionHtml = new StringBuilder();
         Connection con = null;
+        String mediaContentBase64 = "";
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
@@ -75,7 +76,7 @@ public class Politics extends HttpServlet {
             questionStmt.setBytes(1, categoryIdRaw);
             questionStmt.setInt(2, currentQuestionIndex + 1);
             ResultSet questionRs = questionStmt.executeQuery();
-
+            
             if (questionRs.next()) {
                 String questionId = questionRs.getString("id");
                 byte[] questionIdRaw = questionRs.getBytes("id");
@@ -83,8 +84,29 @@ public class Politics extends HttpServlet {
                 String questionText = questionRs.getString("question_text");
                 System.out.println("Question ID: " + questionId);  // Log raw question ID
 
+                String mediaType = questionRs.getString("media_type");
+                Blob mediaBlob = questionRs.getBlob("media_content");
+                System.out.println("Media Type: " + mediaType);
+                if (mediaType.equals("quote")) {
+                    System.out.println("Quote: " + mediaBlob);
+                    String mediaContent = new String(mediaBlob.getBytes(1, (int) mediaBlob.length()));
+
+                    mediaContentBase64 = "<div class='quote'> \"" + mediaContent + "\"</div>";
+                } else if (mediaType.contains("image")) {
+                    System.out.println("Image: " + mediaBlob);
+                    byte[] mediaBytes = mediaBlob.getBytes(1, (int) mediaBlob.length());
+                    String mediaContent = Base64.getEncoder().encodeToString(mediaBytes);
+                    mediaContentBase64 = "<img src=\"data:" + mediaType + ";base64," + mediaContent + "\" />";
+                } else {
+                    System.out.println("Video: " + mediaBlob);
+                    byte[] mediaBytes = mediaBlob.getBytes(1, (int) mediaBlob.length());
+                    String mediaContent = Base64.getEncoder().encodeToString(mediaBytes);
+                    mediaContentBase64 = "<video controls><source src=\"data:" + mediaType + ";base64," + mediaContent + "\" type=\"" + mediaType + "\"></video>";
+                }
+                
                 questionHtml.append("<div class='question'>")
                         .append("<h3>").append(questionText).append("</h3>")
+                        .append("<div id=\"quoteOrBlob\">" + mediaContentBase64 + "</div>\n")
                         .append("<div class='answers'>");
 
                 PreparedStatement answersStmt = con.prepareStatement("SELECT * FROM answers WHERE question_id = ?");

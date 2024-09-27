@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.text.*;
 import java.nio.*;
 
-public class Politics extends HttpServlet {
+public class Quizpage extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);

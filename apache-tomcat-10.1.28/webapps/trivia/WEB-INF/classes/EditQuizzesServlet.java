@@ -1,21 +1,9 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
-//import jakarta.servlet.http.Part;
-import java.sql.*;
-import java.io.*;
-import java.time.LocalDate;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.StringBuilder;
-import java.util.Base64;
-import java.util.Date;
 import java.util.UUID;
-import java.text.*;
 import java.nio.*;
 
 @MultipartConfig
@@ -48,32 +36,23 @@ public class EditQuizzesServlet extends HttpServlet {
                 "</form>" +
                 "<button id=\"quiz-create-button\" value=\"Create\">Create</button>\n" +
                 "</div>\n";
-
-        String errMsg = "";
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
-            try {
-                Class.forName("oracle.jdbc.OracleDriver");
-            } catch (Exception ex) {
-            }
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select id, category_name from categories");
+            repo.select("id, category_name", "categories");
             boolean hasResults = false;
-            byte bArr[] = null;
             UUID sid = null;
             String name = null;
 
-            while (rs.next()) {
+            while (repo.rs.next()) {
                 if (!hasResults) {
                     html += "<p>Or edit an existing quiz: </p>";
                     hasResults = true;
                 }
 
-                byte[] raw = rs.getBytes(1);
+                byte[] raw = repo.rs.getBytes(1);
                 sid = asUuid(raw);
-                name = rs.getString(2);
+                name = repo.rs.getString(2);
                 System.out.println(name);
                 html += name + "<div class=\"quiz-edit-container\">" +
                         "<form class=\"quiz-edit-form\" action=\"editQuizzes\" method=\"POST\" enctype=\"multipart/form-data\" >\n"
@@ -93,22 +72,10 @@ public class EditQuizzesServlet extends HttpServlet {
             html += "<br><br><br><form action=\"main\" method=\"get\">" +
                     "<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
                     "</form>";
-            stmt.close();
-            con.close();
-        } catch (SQLException ex) {
-
-            errMsg = errMsg + "\n--- SQLException caught ---\n";
-            while (ex != null) {
-                errMsg += "Message: " + ex.getMessage();
-                errMsg += "SQLState: " + ex.getSQLState();
-                errMsg += "ErrorCode: " + ex.getErrorCode();
-                ex = ex.getNextException();
-                errMsg += "";
-            }
-            System.out.println(errMsg);
-            return;
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
-
         html += "</body></html>";
         PrintWriter out = response.getWriter();
         out.println(html);
@@ -120,10 +87,9 @@ public class EditQuizzesServlet extends HttpServlet {
         String name = request.getParameter("QuizName");
         Part filePart = request.getPart("FileName");
         String contentType = filePart.getContentType();
-        String fileName = filePart.getSubmittedFileName();
-        Connection con = null;
         UUID quizId = null;
-
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             try {
                 quizId = UUID.fromString(request.getParameter("id"));
@@ -131,32 +97,17 @@ public class EditQuizzesServlet extends HttpServlet {
             } catch (Exception ex) {
                 System.out.println("Error: " + ex.getMessage());
             }
-
-            String stmt = null;
             if (quizId != null) {
-                stmt = "UPDATE categories SET category_name = ?, image_type = ?, image = ? where id = ?";
+                repo.update("categories", "category_name = "+name+", image_type = "+contentType
+                    + ", image = "+filePart.getInputStream(), "id = "+asBytes(quizId));
             } else {
-                stmt = "INSERT INTO categories (category_name, image_type, image, id) VALUES (?,?,?,?)";
                 quizId = UUID.randomUUID();
+                repo.insert("categories", "category_name, image_type, image, id", 
+                "("+name+","+contentType+","+filePart.getInputStream()+","+quizId+")");
             }
-
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-            PreparedStatement preparedStatement = con.prepareStatement(stmt);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, contentType);
-            preparedStatement.setBinaryStream(3, filePart.getInputStream());
-            preparedStatement.setBytes(4, asBytes(quizId));
-            int row = preparedStatement.executeUpdate();
-            preparedStatement.close();
-            con.close();
-        } catch (SQLException ex) {
-            while (ex != null) {
-                System.out.println("Message: " + ex.getMessage());
-                System.out.println("SQLState: " + ex.getSQLState());
-                System.out.println("ErrorCode: " + ex.getErrorCode());
-                ex = ex.getNextException();
-                System.out.println("");
-            }
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
         response.setStatus(200);
         response.sendRedirect("/trivia/editQuizzes");
@@ -168,28 +119,15 @@ public class EditQuizzesServlet extends HttpServlet {
         System.out.println("In doDelete");
         System.out.println(request.getParameter("id"));
         UUID quizId = null;
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             quizId = UUID.fromString(request.getParameter("id"));
+            repo.delete("categories", "id = "+asBytes(quizId));
+            repo.close();
 
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-
-            PreparedStatement preparedStatement = con
-                    .prepareStatement("delete from categories where id = ?");
-            preparedStatement.setBytes(1, asBytes(quizId));
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
-            con.close();
-
-        } catch (SQLException ex) {
-            while (ex != null) {
-                System.out.println("Message: " + ex.getMessage());
-                System.out.println("SQLState: " + ex.getSQLState());
-                System.out.println("ErrorCode: " + ex.getErrorCode());
-                ex = ex.getNextException();
-                System.out.println("");
-            }
+        } catch (Exception e) {
+            System.out.println(e);
         }
         response.setStatus(200);
     }

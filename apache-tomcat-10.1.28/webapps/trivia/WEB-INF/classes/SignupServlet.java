@@ -36,8 +36,7 @@ public class SignupServlet extends HttpServlet {
             UUID uuid = UUID.randomUUID();
             String uuidAsString = uuid.toString().replace("-", "");
             String hashedPassword = BCrypt.hashpw(request.getParameter("password"), BCrypt.gensalt(10));
-            repo.insert(uuidAsString, request.getParameter("user_id"), hashedPassword);
-         }
+            repo.insert("users","'" + uuidAsString + "','" + request.getParameter("user_id") + "','" + hashedPassword + "', 'user'");}
          System.out.println("\n\n");
       } catch (Exception e) {
          System.out.println(e);

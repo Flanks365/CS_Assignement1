@@ -1,27 +1,10 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
-import java.io.*;
-import java.sql.*;
 import java.util.Base64;
 import java.util.UUID;
-import jakarta.servlet.http.*;
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.MultipartConfig;
-//import jakarta.servlet.http.Part;
-import java.sql.*;
-import java.io.*;
-import java.time.LocalDate;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.StringBuilder;
-import java.util.Base64;
-import java.util.Date;
-import java.util.UUID;
-import java.text.*;
 import java.nio.*;
 
 public class Quizpage extends HttpServlet {
@@ -60,69 +43,46 @@ public class Quizpage extends HttpServlet {
         response.setContentType("text/html");
 
         StringBuilder questionHtml = new StringBuilder();
-        Connection con = null;
         String mediaContentBase64 = "";
         String correctAnswerID = "";
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-
-            PreparedStatement questionStmt;
-            ResultSet questionRs;
-
             System.out.println("autoplay: " + autoplay);
             if (!autoplay.equals("all")) {
                 System.out.println("in not autoplay all");
-                PreparedStatement categoryStmt = con
-                        .prepareStatement("SELECT id FROM categories WHERE UPPER(category_name) = UPPER(?)");
-                categoryStmt.setString(1, categoryName);
-                ResultSet categoryRs = categoryStmt.executeQuery();
+                repo.select("id", "categories","UPPER(category_name) = UPPER("+ categoryName +")");
 
-                if (!categoryRs.next()) {
+                if (!repo.rs.next()) {
                     response.getWriter().write("Invalid category name.");
                     return;
                 }
-
-                byte[] categoryIdRaw = categoryRs.getBytes("id");
-
+                byte[] categoryIdRaw = repo.rs.getBytes("id");
                 UUID categoryId = asUuid(categoryIdRaw);
-
-                questionStmt = con.prepareStatement(
-                        "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = ?) WHERE rnum = ?");
-                questionStmt.setBytes(1, categoryIdRaw);
-                questionStmt.setInt(2, currentQuestionIndex + 1);
-                questionRs = questionStmt.executeQuery();
+                repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = "+categoryIdRaw+")", "rnum = " + (currentQuestionIndex + 1));
             } else {
-                questionStmt = con.prepareStatement(
-                        "SELECT * FROM (SELECT q.*, ROWNUM rnum FROM questions q) WHERE rnum = ?");
+                repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q)", "rnum = "+currentQuestionIndex+1);
                 System.out.println("Current Question Index: " + currentQuestionIndex);
-                questionStmt.setInt(1, currentQuestionIndex + 1);
-                questionRs = questionStmt.executeQuery();
             }
-
-            if (questionRs.next()) {
-                String questionId = questionRs.getString("id");
-                byte[] questionIdRaw = questionRs.getBytes("id");
-                // String questionId = Base64.getEncoder().encodeToString(questionIdRaw);
-                String questionText = questionRs.getString("question_text");
+            if (repo.rs.next()) {
+                String questionId = repo.rs.getString("id");
+                byte[] questionIdRaw = repo.rs.getBytes("id");
+                String questionText = repo.rs.getString("question_text");
                 System.out.println("Question ID: " + questionId); // Log raw question ID
 
-                String mediaType = questionRs.getString("media_type");
-                Blob mediaBlob = questionRs.getBlob("media_content");
+                String mediaType = repo.rs.getString("media_type");
+                byte[] mediaBytes = repo.rs.getBytes("media_blob");
                 System.out.println("Media Type: " + mediaType);
                 if (mediaType.equals("quote")) {
-                    System.out.println("Quote: " + mediaBlob);
-                    String mediaContent = new String(mediaBlob.getBytes(1, (int) mediaBlob.length()));
-
+                    System.out.println("Quote: ");
+                    String mediaContent = new String(mediaBytes);
                     mediaContentBase64 = "<div class='quote'> \"" + mediaContent + "\"</div>";
                 } else if (mediaType.contains("image")) {
-                    System.out.println("Image: " + mediaBlob);
-                    byte[] mediaBytes = mediaBlob.getBytes(1, (int) mediaBlob.length());
+                    System.out.println("Image: " );
                     String mediaContent = Base64.getEncoder().encodeToString(mediaBytes);
                     mediaContentBase64 = "<img src=\"data:" + mediaType + ";base64," + mediaContent + "\" />";
                 } else {
-                    System.out.println("Video: " + mediaBlob);
-                    byte[] mediaBytes = mediaBlob.getBytes(1, (int) mediaBlob.length());
+                    System.out.println("Video: " );
                     String mediaContent = Base64.getEncoder().encodeToString(mediaBytes);
                     mediaContentBase64 = "<video controls autoplay><source src=\"data:" + mediaType + ";base64,"
                             + mediaContent + "\" type=\"" + mediaType + "\"></video>";
@@ -133,14 +93,11 @@ public class Quizpage extends HttpServlet {
                         .append("<div id=\"quoteOrBlob\">" + mediaContentBase64 + "</div>\n")
                         .append("<div class='answers'>");
 
-                PreparedStatement answersStmt = con.prepareStatement("SELECT * FROM answers WHERE question_id = ?");
-                answersStmt.setBytes(1, questionIdRaw);
-                ResultSet answersRs = answersStmt.executeQuery();
+                repo.select("*", "answers", "question_id = "+questionIdRaw);
 
-                while (answersRs.next()) {
-                    String answerText = answersRs.getString("answer_text");
-                    byte[] answerIdRaw = answersRs.getBytes("id");
-                    String answerId = answersRs.getString("id");
+                while (repo.rs.next()) {
+                    String answerText = repo.rs.getString("answer_text");
+                    String answerId = repo.rs.getString("id");
                     System.out.println("Answer ID: " + answerId); // Log raw answer ID
 
                     questionHtml.append("<button onclick='selectAnswer(this, \"").append(categoryName).append("\", \"")
@@ -155,15 +112,10 @@ public class Quizpage extends HttpServlet {
                     questionHtml.append(answerText).append("</button>");
                 }
                 if (!autoplay.equals("false")) {
-                    PreparedStatement correctAnswerStmt = con
-                            .prepareStatement("SELECT id FROM answers WHERE question_id = ? AND is_correct = 'Y'");
-                    correctAnswerStmt.setBytes(1, questionIdRaw);
-                    ResultSet correctAnswerRs = correctAnswerStmt.executeQuery();
-                    if (correctAnswerRs.next()) {
-                        correctAnswerID = correctAnswerRs.getString("id");
+                    repo.select("id", "answers", "question_id = "+questionIdRaw+" AND is_correct = 'Y'");
+                    if (repo.rs.next()) {
+                        correctAnswerID = repo.rs.getString("id");
                     }
-                    correctAnswerRs.close();
-                    correctAnswerStmt.close();
                 }
 
                 questionHtml.append("</div>");
@@ -173,47 +125,23 @@ public class Quizpage extends HttpServlet {
                 // questionHtml.append(
                 //         "<br><br><button onclick=\"window.location.href='categories'\">Back to Play Quizzes</button>");
                 questionHtml.append("</div></div>");
-                answersRs.close();
-                answersStmt.close();
             } else {
                 questionHtml.append("<img src='https://images.slideplayer.com/20/5999287/slides/slide_30.jpg'>");
                 questionHtml
                         .append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
             }
-
-            questionRs.close();
-            questionStmt.close();
+            repo.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (con != null) {
+            if (repo != null) {
                 try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                    repo.close();
+                } catch (Exception e) {
+                    System.out.println(e);
                 }
             }
         }
-        String script = "";
-        // if (autoplay) {
-        //     script = "let clock = document.getElementById('" + correctAnswerID + "');" +
-        //             "let secondsRemaining = 4;" +
-        //             "const myInterval = setInterval(()=>{" +
-        //             "secondsRemaining--;" +
-        //             "if(!secondsRemaining)" +
-        //             "startAnimation();" +
-        //             "},1000);" +
-        //             "function startAnimation(){" +
-        //             "clock.classList.add('animation');" +
-        //             "clearInterval(myInterval);" +
-        //             "setTimeout(()=>{" +
-        //             "clock.classList.remove('animation');" +
-        //             "clock.disabled = false;" +
-        //             "clock.click();" +
-        //             "}, 5000);" +
-        //             "clock.classList.add('done');" +
-        //             "};";
-        // }
         PrintWriter out = response.getWriter();
         String finalHtml = "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +

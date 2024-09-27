@@ -26,11 +26,10 @@ public class SignupServlet extends HttpServlet {
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       boolean errorFlag = false;
       response.setContentType("text/html");
-      Repository repo = null;
-      repo = new Repository();
+      Repository repo = new Repository();
       repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
       try {
-         repo.select("*", "users", "username = '" + request.getParameter("user_id"));
+         repo.select("*", "users", "username = '" + request.getParameter("user_id") + "'");
          if (repo.rs.next()) {
             errorFlag = true;
          } else {

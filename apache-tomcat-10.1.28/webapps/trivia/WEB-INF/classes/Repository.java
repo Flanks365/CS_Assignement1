@@ -74,7 +74,7 @@ public class Repository implements IRepository{
 
   public void select(String fieldString, String tableString, String conditionString) {
     try {
-      PreparedStatement stmt = con.prepareStatement("select "+fieldString+" from "+tableString+" where "+conditionString+ "'");
+      PreparedStatement stmt = con.prepareStatement("select "+fieldString+" from "+tableString+" where "+conditionString);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";

@@ -108,10 +108,10 @@ public class Repository implements IRepository{
     }
   }
 
-  public byte[] getBlobAsBytes() {
+  public byte[] getBlobAsBytes(String columnName) {
     byte bArr[] = null;
     try {
-      Blob b = rs.getBlob(4);
+      Blob b = rs.getBlob(columnName);
       bArr = b.getBytes(1, (int) b.length());
     } catch (SQLException ex) {
       String errMsg = "";

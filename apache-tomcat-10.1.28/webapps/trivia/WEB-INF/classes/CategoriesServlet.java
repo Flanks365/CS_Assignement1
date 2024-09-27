@@ -64,7 +64,7 @@ public class CategoriesServlet extends HttpServlet {
 
 				// retrieving blob from database
 				imgType = repo.rs.getString(3);
-				bArr = repo.getBlobAsBytes();
+				bArr = repo.getBlobAsBytes("image");
 
 				html += "<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n";
 

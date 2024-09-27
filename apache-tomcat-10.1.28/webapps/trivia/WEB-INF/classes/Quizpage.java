@@ -58,7 +58,6 @@ public class Quizpage extends HttpServlet {
                     return;
                 }
                 byte[] categoryIdRaw = repo.rs.getBytes("id");
-                UUID categoryId = asUuid(categoryIdRaw);
                 repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = "+categoryIdRaw+")", "rnum = " + (currentQuestionIndex + 1));
             } else {
                 repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q)", "rnum = "+currentQuestionIndex+1);

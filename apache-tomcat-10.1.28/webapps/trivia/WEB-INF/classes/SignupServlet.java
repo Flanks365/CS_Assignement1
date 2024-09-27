@@ -1,6 +1,5 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
-import java.sql.*;
 import java.util.UUID;
 import java.io.*;
 import BCrypt.*;
@@ -27,44 +26,24 @@ public class SignupServlet extends HttpServlet {
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       boolean errorFlag = false;
       response.setContentType("text/html");
-      String errMsg = "";
-      Connection con = null;
+      Repository repo = null;
+      repo = new Repository();
+      repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
       try {
-         try {
-            Class.forName("oracle.jdbc.OracleDriver");
-         } catch (Exception ex) {
-
-         }
-         con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-         Statement stmt2 = con.createStatement();
-         ResultSet rs = stmt2.executeQuery("select * from users where username = '" + request.getParameter("user_id") + "'");
-         if (rs.next()) {
+         repo.select("*", "users", "username = '" + request.getParameter("user_id"));
+         if (repo.rs.next()) {
             errorFlag = true;
          } else {
             UUID uuid = UUID.randomUUID();
             String uuidAsString = uuid.toString().replace("-", "");
-            Statement insertStatement = con.createStatement();
             String hashedPassword = BCrypt.hashpw(request.getParameter("password"), BCrypt.gensalt(10));
-            String query = "insert into users values ('" + uuidAsString + "','" + request.getParameter("user_id")
-                  + "','" + hashedPassword + "', 'user')";
-            System.out.println(query);
-            insertStatement.executeUpdate(query);
-            insertStatement.close();
+            repo.insert(uuidAsString, request.getParameter("user_id"), hashedPassword);
          }
-         stmt2.close();
-         con.close();
          System.out.println("\n\n");
-      } catch (SQLException ex) {
-         errMsg = errMsg + "\n--- SQLException caught ---\n";
-         while (ex != null) {
-            errMsg += "Message: " + ex.getMessage();
-            errMsg += "SQLState: " + ex.getSQLState();
-            errMsg += "ErrorCode: " + ex.getErrorCode();
-            ex = ex.getNextException();
-            errMsg += "";
-         }
-         System.out.println(errMsg);
+      } catch (Exception e) {
+         System.out.println(e);
       }
+      repo.close();
 
       if (errorFlag) {
          PrintWriter out = response.getWriter();

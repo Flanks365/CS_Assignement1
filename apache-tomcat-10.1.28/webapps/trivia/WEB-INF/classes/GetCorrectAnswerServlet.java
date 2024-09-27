@@ -1,20 +1,16 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.*;
-import java.sql.*;
 
 public class GetCorrectAnswerServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
-        Connection con = null;
-
+        // Database connection
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
-            // Database connection
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-
             // Get the questionId and answerId from the request
             String questionId = request.getParameter("questionId");
             String answerId = request.getParameter("answerId");
@@ -26,23 +22,23 @@ public class GetCorrectAnswerServlet extends HttpServlet {
             }
 
             // Check if the answer is correct
-            if (isCorrectAnswer(answerId, con)) {
+            if (isCorrectAnswer(answerId, repo)) {
                 out.print("correct");                
             } else {
                 out.print("incorrect");
             }
 
             out.flush();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("error");
             out.flush();
         } finally {
-            if (con != null) {
+            if (repo != null) {
                 try {
-                    con.close();
-                } catch (SQLException e) {
+                    repo.close();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -50,13 +46,15 @@ public class GetCorrectAnswerServlet extends HttpServlet {
     }
 
     // Method to check if the answerId corresponds to a correct answer
-    private boolean isCorrectAnswer(String answerId, Connection con) throws SQLException {
-        PreparedStatement stmt = con.prepareStatement("SELECT is_correct FROM answers WHERE id = ?");
-        stmt.setString(1, answerId);
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            return "Y".equals(rs.getString("is_correct"));
+    private boolean isCorrectAnswer(String answerId, Repository repo) {
+        repo.select("is_correct", "answers", "id = "+ answerId);
+        try {
+            if (repo.rs.next()) {
+                return "Y".equals(repo.rs.getString("is_correct"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e);
         }
         return false;
     }

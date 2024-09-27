@@ -1,3 +1,4 @@
+import java.io.InputStream;
 import java.sql.*;
 
 public class Repository implements IRepository{
@@ -47,6 +48,25 @@ public class Repository implements IRepository{
   public void insert(String tableString, String setString, String valueString) {
     try {
       PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
+  }
+
+  public void insert(String tableString, String setString, String valueString, InputStream is) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+      stmt.setBlob(1, is);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";

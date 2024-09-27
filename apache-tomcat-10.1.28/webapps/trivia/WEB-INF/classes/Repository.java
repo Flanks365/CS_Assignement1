@@ -44,9 +44,9 @@ public class Repository implements IRepository{
     }
   }
 
-  public void insert(String uuidAsString,String user_id, String hashedPassword) {
+  public void insert(String tableString, String setString, String valueString) {
     try {
-      PreparedStatement stmt = con.prepareStatement("insert into users values ('" + uuidAsString + "','" + user_id + "','" + hashedPassword + "', 'user')");
+      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
@@ -62,14 +62,58 @@ public class Repository implements IRepository{
     }
   }
 
-  public void update() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'update'");
+  public void insert(String tableString, String valueString) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("insert into "+" values ("+valueString+")");
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
   }
 
-  public void delete() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'delete'");
+  public void update(String tableString, String setString, String conditionString) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("update "+ tableString +" set " + setString + "where" + conditionString);
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }  
+  }
+
+  public void delete(String tableString, String conditionString) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("delete from "+tableString+" where " + conditionString);
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
   }
 
   public void select(String fieldString, String tableString, String conditionString) {

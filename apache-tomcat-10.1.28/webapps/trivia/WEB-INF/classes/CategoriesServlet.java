@@ -5,10 +5,6 @@ import java.io.PrintWriter;
 import java.util.Base64;
 import java.util.UUID;
 import java.nio.*;
-import java.sql.Blob;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class CategoriesServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -48,12 +44,8 @@ public class CategoriesServlet extends HttpServlet {
 
 		html += "</div>" + "<h1 align=\"center\">" + title + "</h1>\n";
 
-		String categories[];
-
 		// used for rendering image
 		byte bArr[] = null;
-		UUID sid = null;
-		String name = null;
 		String imgType = null;
 
 		// Rendering questions Netflix style
@@ -72,8 +64,7 @@ public class CategoriesServlet extends HttpServlet {
 
 				// retrieving blob from database
 				imgType = repo.rs.getString(3);
-				Blob b = repo.rs.getBlob(4);
-				bArr = b.getBytes(1, (int) b.length());
+				bArr = repo.getBlobAsBytes();
 
 				html += "<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n";
 

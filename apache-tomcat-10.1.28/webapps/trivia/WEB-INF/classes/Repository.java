@@ -107,5 +107,25 @@ public class Repository implements IRepository{
       System.out.println(errMsg);    
     }
   }
+
+  public byte[] getBlobAsBytes() {
+    byte bArr[] = null;
+    try {
+      Blob b = rs.getBlob(4);
+      bArr = b.getBytes(1, (int) b.length());
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
+    return bArr;
+  }
   
 }

@@ -5,4 +5,5 @@ public interface IRepository  {
   void update();
   void delete();
   void select(String fieldString, String tableString, String conditionString);
+  void select(String fieldString, String tableString);
 }

@@ -90,5 +90,22 @@ public class Repository implements IRepository{
     }
   }
 
+  public void select(String fieldString, String tableString) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("select "+fieldString+" from "+tableString);
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
+  }
   
 }

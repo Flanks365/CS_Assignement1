@@ -47,7 +47,7 @@ public class SignupServlet extends HttpServlet {
       if (errorFlag) {
          PrintWriter out = response.getWriter();
          out.println("<html>\n" + "<head><title>" + "Sign up" + "</title>"
-         + "<link rel=\"stylesheet\" href=\"/trivia/styles.css\" type=\"text/css\">\n" + "</head>\n" + "<body>\n" 
+         + "<link rel=\"stylesheet\" href=\"/trivia/resources/css/styles.css\" type=\"text/css\">\n" + "</head>\n" + "<body>\n" 
          + "<h1 align=\"center\">" + "Sign up" + "</h1>\n" 
          + "<div id='error' style= 'color:red;'> <strong> Sorry that username is already taken </strong> </div>" 
          + "<form action=\"signup\" method=\"POST\">\n"

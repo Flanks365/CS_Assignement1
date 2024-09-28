@@ -48,6 +48,7 @@ public class Repository implements IRepository{
   public void insert(String tableString, String valueString) {
     try {
       PreparedStatement stmt = con.prepareStatement("insert into "+tableString+" values ("+valueString+")");
+      System.out.println("insert into "+tableString+" values ("+valueString+")");
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
@@ -113,6 +114,7 @@ public class Repository implements IRepository{
   public void update(String tableString, String setString, String conditionString) {
     try {
       PreparedStatement stmt = con.prepareStatement("update "+ tableString +" set " + setString + "where" + conditionString);
+      System.out.println("update "+ tableString +" set " + setString + "where" + conditionString);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
@@ -131,6 +133,7 @@ public class Repository implements IRepository{
   public void delete(String tableString, String conditionString) {
     try {
       PreparedStatement stmt = con.prepareStatement("delete from "+tableString+" where " + conditionString);
+      System.out.println("delete from "+tableString+" where " + conditionString);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
@@ -168,6 +171,7 @@ public class Repository implements IRepository{
   public void select(String fieldString, String tableString) {
     try {
       PreparedStatement stmt = con.prepareStatement("select "+fieldString+" from "+tableString);
+      System.out.println("select "+fieldString+" from "+tableString);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";

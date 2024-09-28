@@ -231,7 +231,8 @@ public class EditQuestionServlet extends HttpServlet {
         repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             sid = UUID.fromString(request.getParameter("questionId"));
-            repo.delete("questions", "id = "+asBytes(sid));
+            String id = sid.toString().replace("-", "").toUpperCase();
+            repo.delete("questions", "id = '"+id+"'");
             repo.close();
         } catch (Exception e) {
             System.out.println(e);

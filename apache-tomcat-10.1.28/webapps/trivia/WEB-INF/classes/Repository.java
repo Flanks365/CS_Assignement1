@@ -88,9 +88,11 @@ public class Repository implements IRepository{
       if (type.equals("blob")) {
         PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
         stmt.setBlob(1, is);
+        System.out.println("insert into "+tableString+"("+setString+") values ("+valueString+")");
         rs = stmt.executeQuery();
       } else {
         PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+        System.out.println("insert into "+tableString+"("+setString+") values ("+valueString+")");
         stmt.setBinaryStream(1, is);
         rs = stmt.executeQuery();
       }
@@ -147,6 +149,7 @@ public class Repository implements IRepository{
   public void select(String fieldString, String tableString, String conditionString) {
     try {
       PreparedStatement stmt = con.prepareStatement("select "+fieldString+" from "+tableString+" where "+conditionString);
+      System.out.println("select "+fieldString+" from "+tableString+" where "+conditionString);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";

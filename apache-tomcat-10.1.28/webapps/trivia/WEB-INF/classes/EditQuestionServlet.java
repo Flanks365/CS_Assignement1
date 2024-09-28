@@ -60,7 +60,8 @@ public class EditQuestionServlet extends HttpServlet {
                     "<br><input type=\"submit\" value=\"Submit\"/>" +
                     "</form>" +
                     "<button id=\"form-toggle\">Create</button>";
-            repo.select("id, question_text, media_type, media_preview", "questions", "category_id = "+asBytes(quizId));
+            String id= request.getParameter("id").replace("-","").toUpperCase();
+            repo.select("id, question_text, media_type, media_preview", "questions", "category_id = '"+id+"'");
             boolean hasResults = false;
             UUID sid = null;
             String[] answers = null;
@@ -182,31 +183,37 @@ public class EditQuestionServlet extends HttpServlet {
         repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             if (sidRaw != null) {
-                repo.delete("answers", "question_id = "+sidRaw);
-                repo.delete("questions", "id = "+sidRaw);
+                String qid = request.getParameter("questionId").replace("-", "").toUpperCase();
+                repo.delete("answers", "question_id = '"+qid+"'");
+                repo.delete("questions", "id = '"+qid+"'");
             }
 
             UUID uuid = UUID.randomUUID();
-            repo.insert("questions",
-                "(id, category_id, question_text, media_type, media_content, media_preview)",
-                asBytes(uuid)+","+asBytes(quizId)+","+question+","+contentType+",?,"+contentPreview, "blob", is);
+            String id = uuid.toString().replace("-", "").toUpperCase();
+            String quizIDString = request.getParameter("id").replace("-", "").toUpperCase();
+            repo.insert("questions","id, category_id, question_text, media_type, media_content, media_preview",
+                "'"+id+"','"+quizIDString+"','"+question+"','"+contentType+"',?,'"+contentPreview+"'", "blob", is);
             UUID answerUuid = UUID.randomUUID();
-            repo.insert("answers", "(id, question_id, answer_text, is_correct, answer_index)",
-                asBytes(answerUuid)+","+asBytes(uuid)+","+answer+",\"Y\",0,");
+            String answerId = answerUuid.toString().replace("-", "").toUpperCase();
+            repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                "'"+answerId+"','"+id+"','"+answer+"','Y',0");
             UUID decoy1Uuid = UUID.randomUUID();
-            repo.insert("answers", "(id, question_id, answer_text, is_correct, answer_index)",
-                asBytes(decoy1Uuid)+","+asBytes(uuid)+","+decoy1+",\"N\",1,");
+            String decoy1Id = decoy1Uuid.toString().replace("-", "").toUpperCase();
+            repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                "'"+decoy1Id+"','"+id+"','"+decoy1+"','N',1");
 
             if (decoy2 != null && !decoy2.trim().equals("")) {
                 UUID decoy2Uuid = UUID.randomUUID();
-                repo.insert("answers", "(id, question_id, answer_text, is_correct, answer_index)",
-                    asBytes(decoy2Uuid)+","+asBytes(uuid)+","+decoy2+",\"N\",2,");
+                String decoy2Id = decoy2Uuid.toString().replace("-", "").toUpperCase();
+                repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                    "'"+decoy2Id+"','"+id+"','"+decoy2+"','N',2");
             }
 
             if (decoy3 != null && !decoy3.trim().equals("")) {
                 UUID decoy3Uuid = UUID.randomUUID();
-                repo.insert("answers", "(id, question_id, answer_text, is_correct, answer_index)",
-                    asBytes(decoy3Uuid)+","+asBytes(uuid)+","+decoy3+",\"N\",3,");
+                String decoy3Id = decoy3Uuid.toString().replace("-", "").toUpperCase();
+                repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                    "'"+decoy3Id+"','"+id+"','"+decoy3+"','N',3");
             }
             repo.close();
         } catch (Exception e) {
@@ -252,7 +259,8 @@ public class EditQuestionServlet extends HttpServlet {
         String[] answers = { null, null, null, null };
 
         try {
-            repo.select("answer_text, is_correct, answer_index", "answers", "question_id = "+questionId);
+            String id = asUuid(questionId).toString().replace("-", "").toUpperCase();
+            repo.select("answer_text, is_correct, answer_index", "answers", "question_id = '"+id+"'");
             String aText;
             int aIdx;
             while (repo.rs.next()) {

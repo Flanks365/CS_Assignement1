@@ -51,14 +51,15 @@ public class Quizpage extends HttpServlet {
             System.out.println("autoplay: " + autoplay);
             if (!autoplay.equals("all")) {
                 System.out.println("in not autoplay all");
-                repo.select("id", "categories","UPPER(category_name) = UPPER("+ categoryName +")");
+                repo.select("id", "categories","UPPER(category_name) = UPPER('"+ categoryName +"')");
 
                 if (!repo.rs.next()) {
                     response.getWriter().write("Invalid category name.");
                     return;
                 }
                 byte[] categoryIdRaw = repo.rs.getBytes("id");
-                repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = "+categoryIdRaw+")", "rnum = " + (currentQuestionIndex + 1));
+                String categoryId = repo.rs.getString("id");
+                repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q WHERE q.category_id = '"+categoryId+"')", "rnum = " + (currentQuestionIndex + 1));
             } else {
                 repo.select("*", "(SELECT q.*, ROWNUM rnum FROM questions q)", "rnum = "+currentQuestionIndex+1);
                 System.out.println("Current Question Index: " + currentQuestionIndex);
@@ -70,7 +71,7 @@ public class Quizpage extends HttpServlet {
                 System.out.println("Question ID: " + questionId); // Log raw question ID
 
                 String mediaType = repo.rs.getString("media_type");
-                byte[] mediaBytes = repo.rs.getBytes("media_blob");
+                byte[] mediaBytes = repo.rs.getBytes("media_content");
                 System.out.println("Media Type: " + mediaType);
                 if (mediaType.equals("quote")) {
                     System.out.println("Quote: ");
@@ -91,8 +92,8 @@ public class Quizpage extends HttpServlet {
                         .append("<h3>").append(questionText).append("</h3>")
                         .append("<div id=\"quoteOrBlob\">" + mediaContentBase64 + "</div>\n")
                         .append("<div class='answers'>");
-
-                repo.select("*", "answers", "question_id = "+questionIdRaw);
+                String qid = repo.rs.getString("id");
+                repo.select("*", "answers", "question_id = '"+qid+"'");
 
                 while (repo.rs.next()) {
                     String answerText = repo.rs.getString("answer_text");
@@ -111,7 +112,7 @@ public class Quizpage extends HttpServlet {
                     questionHtml.append(answerText).append("</button>");
                 }
                 if (!autoplay.equals("false")) {
-                    repo.select("id", "answers", "question_id = "+questionIdRaw+" AND is_correct = 'Y'");
+                    repo.select("id", "answers", "question_id = '"+qid+"' AND is_correct = 'Y'");
                     if (repo.rs.next()) {
                         correctAnswerID = repo.rs.getString("id");
                     }

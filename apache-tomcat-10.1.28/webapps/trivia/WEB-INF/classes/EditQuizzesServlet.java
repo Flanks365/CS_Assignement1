@@ -124,7 +124,8 @@ public class EditQuizzesServlet extends HttpServlet {
         repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             quizId = UUID.fromString(request.getParameter("id"));
-            repo.delete("categories", "id = "+asBytes(quizId));
+            String quizIdAsString = quizId.toString().replace("-", "").toUpperCase();
+            repo.delete("categories", "id = '"+quizIdAsString+"'");
             repo.close();
 
         } catch (Exception e) {

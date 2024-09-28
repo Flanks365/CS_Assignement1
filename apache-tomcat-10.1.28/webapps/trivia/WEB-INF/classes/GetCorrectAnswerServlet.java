@@ -47,7 +47,7 @@ public class GetCorrectAnswerServlet extends HttpServlet {
 
     // Method to check if the answerId corresponds to a correct answer
     private boolean isCorrectAnswer(String answerId, Repository repo) {
-        repo.select("is_correct", "answers", "id = "+ answerId);
+        repo.select("is_correct", "answers", "id = '"+ answerId+"'");
         try {
             if (repo.rs.next()) {
                 return "Y".equals(repo.rs.getString("is_correct"));

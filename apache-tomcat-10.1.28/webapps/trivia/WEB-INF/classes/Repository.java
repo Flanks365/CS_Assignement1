@@ -44,10 +44,30 @@ public class Repository implements IRepository{
       System.out.println(errMsg);    
     }
   }
+  
+  public void insert(String tableString, String valueString) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+" values ("+valueString+")");
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }
+  }
 
   public void insert(String tableString, String setString, String valueString) {
     try {
-      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+" ("+setString+") values ("+valueString+")");
+      String temp = "insert into "+tableString+" ("+setString+") values ("+valueString+")";
+      System.out.println(temp);
       rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
@@ -63,29 +83,17 @@ public class Repository implements IRepository{
     }
   }
 
-  public void insert(String tableString, String setString, String valueString, InputStream is) {
+  public void insert(String tableString, String setString, String valueString, String type, InputStream is) {
     try {
-      PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
-      stmt.setBlob(1, is);
-      rs = stmt.executeQuery();
-    } catch (SQLException ex) {
-      String errMsg = "";
-      errMsg += "\n--- SQLException caught ---\n";
-      while (ex != null) {
-         errMsg += "Message: " + ex.getMessage();
-         errMsg += "SQLState: " + ex.getSQLState();
-         errMsg += "ErrorCode: " + ex.getErrorCode();
-         ex = ex.getNextException();
-         errMsg += "";
+      if (type.equals("blob")) {
+        PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+        stmt.setBlob(1, is);
+        rs = stmt.executeQuery();
+      } else {
+        PreparedStatement stmt = con.prepareStatement("insert into "+tableString+"("+setString+") values ("+valueString+")");
+        stmt.setBinaryStream(1, is);
+        rs = stmt.executeQuery();
       }
-      System.out.println(errMsg);    
-    }
-  }
-
-  public void insert(String tableString, String valueString) {
-    try {
-      PreparedStatement stmt = con.prepareStatement("insert into "+" values ("+valueString+")");
-      rs = stmt.executeQuery();
     } catch (SQLException ex) {
       String errMsg = "";
       errMsg += "\n--- SQLException caught ---\n";

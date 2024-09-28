@@ -189,7 +189,7 @@ public class EditQuestionServlet extends HttpServlet {
             UUID uuid = UUID.randomUUID();
             repo.insert("questions",
                 "(id, category_id, question_text, media_type, media_content, media_preview)",
-                asBytes(uuid)+","+asBytes(quizId)+","+question+","+contentType+",?,"+contentPreview, is);
+                asBytes(uuid)+","+asBytes(quizId)+","+question+","+contentType+",?,"+contentPreview, "blob", is);
             UUID answerUuid = UUID.randomUUID();
             repo.insert("answers", "(id, question_id, answer_text, is_correct, answer_index)",
                 asBytes(answerUuid)+","+asBytes(uuid)+","+answer+",\"Y\",0,");

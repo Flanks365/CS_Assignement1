@@ -102,8 +102,9 @@ public class EditQuizzesServlet extends HttpServlet {
                     + ", image = "+filePart.getInputStream(), "id = "+asBytes(quizId));
             } else {
                 quizId = UUID.randomUUID();
+                String quizIdAsString = quizId.toString().replace("-", "");
                 repo.insert("categories", "category_name, image_type, image, id", 
-                "("+name+","+contentType+","+filePart.getInputStream()+","+quizId+")");
+                "'"+name+"','"+contentType+"',?,'"+quizIdAsString+"'","stream",filePart.getInputStream());
             }
             repo.close();
         } catch (Exception e) {

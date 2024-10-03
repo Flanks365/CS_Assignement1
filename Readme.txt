@@ -1,3 +1,19 @@
+Setting up and launching webapp instructions:
+1. Ensure you have set up the required tables for the database (see the database instructions below)
+2. Clone the repo from https://github.com/Flanks365/CS_Assignement1 onto your machine
+3. Create an environment variable called "CATALINA_HOME" and map it to this projects "apache-tomcat-10.1.28" folder
+4. Open the command prompt and navigate to this projects "bin" folder. 
+5. Type "startup.bat" in the command line to launch the webapp
+6. Type "http://localhost:8081/trivia/login" in your browser to access the website
+7. Enjoy!
+
+Setting up database instructions:
+1. Download the oracle database if you have not already 
+2. Open and connect to your oracle database
+3. Ensure that your oracle username is "system" and your oracle password is "oracle1"
+4. Execute the commands below to create the tables
+5. Execute the command "commit;" to save your changes
+
 Table creation script:
 
  CREATE TABLE categories (

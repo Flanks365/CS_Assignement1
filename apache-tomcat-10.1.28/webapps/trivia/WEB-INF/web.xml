@@ -22,12 +22,12 @@
   </servlet-mapping>
 
     <servlet>
-    <servlet-name>politics</servlet-name>
-    <servlet-class>Politics</servlet-class>
+    <servlet-name>quizpage</servlet-name>
+    <servlet-class>Quizpage</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>politics</servlet-name>
+    <servlet-name>quizpage</servlet-name>
     <url-pattern>/Quizpage/*</url-pattern>
   </servlet-mapping>
 
@@ -39,16 +39,6 @@
   <servlet-mapping>
     <servlet-name>GetCorrectAnswerServlet</servlet-name>
     <url-pattern>/getCorrectAnswer</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>blobTest</servlet-name>
-    <servlet-class>BlobTest</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>blobTest</servlet-name>
-    <url-pattern>/blobTest</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -93,7 +83,7 @@
 
   <servlet>
     <servlet-name>main</servlet-name>
-    <servlet-class>MainServlet</servlet-class>
+    <servlet-class>CategoriesServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
@@ -108,16 +98,6 @@
   <servlet-mapping>
     <servlet-name>Logout</servlet-name>
     <url-pattern>/logout</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>play</servlet-name>
-    <servlet-class>PlayServlet</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>play</servlet-name>
-    <url-pattern>/play</url-pattern>
   </servlet-mapping>
 
   <servlet>

@@ -1,10 +1,6 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class MainServlet extends HttpServlet {
 
@@ -45,6 +41,12 @@ public class MainServlet extends HttpServlet {
 		html += "<div style=\"text-align: center;\">\n" +
 		"<form action=\"categories\" method=\"GET\">\n" +
 		"<input type=\"submit\" value=\"Play Quizzes\" />\n" +
+		"</form>\n" +
+		"</div>\n" +
+		"<div style=\"text-align: center;\">\n" +
+		"<form action=\"Quizpage\" method=\"GET\">\n" +
+		"<input type=\"hidden\" name=\"autoplay\" value=\"true\">" +
+		"<input type=\"submit\" value=\"Autoplay\" />\n" +
 		"</form>\n" +
 		"</div>\n" +
 		"<div style=\"text-align: center;\">\n" +

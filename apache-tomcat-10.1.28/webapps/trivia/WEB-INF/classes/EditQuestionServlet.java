@@ -1,15 +1,8 @@
 import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
-
-import java.sql.*;
 import java.io.*;
 import java.util.*;
-import java.time.LocalDate;
-import java.lang.StringBuilder;
-import java.net.HttpURLConnection;
-import java.util.Date;
-import java.text.*;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
@@ -34,17 +27,10 @@ public class EditQuestionServlet extends HttpServlet {
                 "<link rel=\"stylesheet\" href=\"resources/css/styles.css\" type=\"text/css\">\n" +
                 "</head>\n" +
                 "<body>\n";
-        String errMsg = "";
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
-            try {
-                Class.forName("oracle.jdbc.OracleDriver");
-            } catch (Exception ex) {
-                System.out.println("Message: " + ex.getMessage());
-                return;
-            }
             String quizName = request.getParameter("quizName");
-            Enumeration<String> params = request.getParameterNames();
             System.out.println("params: " + Arrays.toString(request.getParameterValues("quizName")));
 
             UUID quizId = UUID.fromString(request.getParameter("id"));
@@ -74,30 +60,23 @@ public class EditQuestionServlet extends HttpServlet {
                     "<br><input type=\"submit\" value=\"Submit\"/>" +
                     "</form>" +
                     "<button id=\"form-toggle\">Create</button>";
-
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-            PreparedStatement stmt = con
-                    .prepareStatement(
-                            "select id, question_text, media_type, media_preview from questions where category_id = ?");
-            stmt.setBytes(1, asBytes(quizId));
-            ResultSet rs = stmt.executeQuery();
+            String id= request.getParameter("id").replace("-","").toUpperCase();
+            repo.select("id, question_text, media_type, media_preview", "questions", "category_id = '"+id+"'");
             boolean hasResults = false;
-            byte bArr[] = null;
             UUID sid = null;
             String[] answers = null;
 
-            while (rs.next()) {
+            while (repo.rs.next()) {
                 if (!hasResults) {
                     html += "<p>Or edit an existing question: </p>";
                     hasResults = true;
                 }
 
-                byte[] raw = rs.getBytes(1);
+                byte[] raw = repo.rs.getBytes(1);
                 sid = asUuid(raw);
-                String question = rs.getString(2);
-                String mediaType = rs.getString(3);
-                String mediaPreview = rs.getString(4);
+                String question = repo.rs.getString(2);
+                String mediaType = repo.rs.getString(3);
+                String mediaPreview = repo.rs.getString(4);
 
                 String corrAns = null, decAns1 = null, decAns2 = null, decAns3 = null;
                 answers = getAnswers(raw);
@@ -153,21 +132,10 @@ public class EditQuestionServlet extends HttpServlet {
             html += "<br><br><br><form action=\"editQuizzes\" method=\"get\">" +
                     "<input type=\"submit\" value=\"Back to Edit Quizzes Page\"/>\n" +
                     "</form>";
-            stmt.close();
-            con.close();
-        } catch (SQLException ex) {
-
-            errMsg = errMsg + "\n--- SQLException caught ---\n";
-            while (ex != null) {
-                errMsg += "Message: " + ex.getMessage();
-                errMsg += "SQLState: " + ex.getSQLState();
-                errMsg += "ErrorCode: " + ex.getErrorCode();
-                ex = ex.getNextException();
-                errMsg += "";
-            }
-            System.out.println(errMsg);
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
-
         html += "</body></html>";
         PrintWriter out = response.getWriter();
         out.println(html);
@@ -211,96 +179,45 @@ public class EditQuestionServlet extends HttpServlet {
             contentPreview = quote;
             is = new ByteArrayInputStream(quote.getBytes(StandardCharsets.UTF_8));
         }
-
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-
             if (sidRaw != null) {
-                PreparedStatement deleteStatement = con
-                        .prepareStatement(
-                                "DELETE FROM answers WHERE question_id = ?");
-                deleteStatement.setBytes(1, sidRaw);
-                deleteStatement.executeUpdate();
-                deleteStatement.close();
-
-                PreparedStatement deleteQuestionStatement = con
-                        .prepareStatement(
-                                "DELETE FROM questions WHERE id = ?");
-                deleteQuestionStatement.setBytes(1, sidRaw);
-                deleteQuestionStatement.executeUpdate();
-                deleteQuestionStatement.close();
-
+                String qid = request.getParameter("questionId").replace("-", "").toUpperCase();
+                repo.delete("answers", "question_id = '"+qid+"'");
+                repo.delete("questions", "id = '"+qid+"'");
             }
 
-            PreparedStatement preparedStatement = con
-                    .prepareStatement(
-                            "INSERT INTO questions (" +
-                                    "id, category_id, question_text, media_type, media_content, media_preview" +
-                                    ") VALUES (?,?,?,?,?,?)");
             UUID uuid = UUID.randomUUID();
-            preparedStatement.setBytes(1, asBytes(uuid));
-            preparedStatement.setBytes(2, asBytes(quizId));
-            preparedStatement.setString(3, question);
-            preparedStatement.setString(4, contentType);
-            preparedStatement.setBinaryStream(5, is);
-            preparedStatement.setString(6, contentPreview);
-
-            int row = preparedStatement.executeUpdate();
-            preparedStatement.close();
-
-            PreparedStatement answerStatement = con
-                    .prepareStatement(
-                            "INSERT INTO answers (" +
-                                    "id, question_id, answer_text, is_correct, answer_index" +
-                                    ") VALUES (?,?,?,?,?)");
+            String id = uuid.toString().replace("-", "").toUpperCase();
+            String quizIDString = request.getParameter("id").replace("-", "").toUpperCase();
+            repo.insert("questions","id, category_id, question_text, media_type, media_content, media_preview",
+                "'"+id+"','"+quizIDString+"','"+question+"','"+contentType+"',?,'"+contentPreview+"'", "blob", is);
             UUID answerUuid = UUID.randomUUID();
-            answerStatement.setBytes(1, asBytes(answerUuid));
-            answerStatement.setBytes(2, asBytes(uuid));
-            answerStatement.setString(3, answer);
-            answerStatement.setString(4, "Y");
-            answerStatement.setInt(5, 0);
-            answerStatement.executeUpdate();
-
+            String answerId = answerUuid.toString().replace("-", "").toUpperCase();
+            repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                "'"+answerId+"','"+id+"','"+answer+"','Y',0");
             UUID decoy1Uuid = UUID.randomUUID();
-            answerStatement.setBytes(1, asBytes(decoy1Uuid));
-            answerStatement.setBytes(2, asBytes(uuid));
-            answerStatement.setString(3, decoy1);
-            answerStatement.setString(4, "N");
-            answerStatement.setInt(5, 1);
-            answerStatement.executeUpdate();
+            String decoy1Id = decoy1Uuid.toString().replace("-", "").toUpperCase();
+            repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                "'"+decoy1Id+"','"+id+"','"+decoy1+"','N',1");
 
             if (decoy2 != null && !decoy2.trim().equals("")) {
                 UUID decoy2Uuid = UUID.randomUUID();
-                answerStatement.setBytes(1, asBytes(decoy2Uuid));
-                answerStatement.setBytes(2, asBytes(uuid));
-                answerStatement.setString(3, decoy2);
-                answerStatement.setString(4, "N");
-                answerStatement.setInt(5, 2);
-                answerStatement.executeUpdate();
+                String decoy2Id = decoy2Uuid.toString().replace("-", "").toUpperCase();
+                repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                    "'"+decoy2Id+"','"+id+"','"+decoy2+"','N',2");
             }
 
             if (decoy3 != null && !decoy3.trim().equals("")) {
                 UUID decoy3Uuid = UUID.randomUUID();
-                answerStatement.setBytes(1, asBytes(decoy3Uuid));
-                answerStatement.setBytes(2, asBytes(uuid));
-                answerStatement.setString(3, decoy3);
-                answerStatement.setString(4, "N");
-                answerStatement.setInt(5, 3);
-                answerStatement.executeUpdate();
+                String decoy3Id = decoy3Uuid.toString().replace("-", "").toUpperCase();
+                repo.insert("answers", "id, question_id, answer_text, is_correct, answer_index",
+                    "'"+decoy3Id+"','"+id+"','"+decoy3+"','N',3");
             }
-
-            answerStatement.close();
-            con.close();
-        } catch (SQLException ex) {
-            while (ex != null) {
-                System.out.println("Message: " + ex.getMessage());
-                System.out.println("SQLState: " + ex.getSQLState());
-                System.out.println("ErrorCode: " + ex.getErrorCode());
-                ex = ex.getNextException();
-                System.out.println("");
-            }
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
         response.setStatus(200);
         response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
@@ -309,33 +226,18 @@ public class EditQuestionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // UUID quizId = UUID.fromString(request.getParameter("id"));
-        // String name = request.getParameter("quizName");
         UUID sid = null;
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
             sid = UUID.fromString(request.getParameter("questionId"));
-
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-
-            PreparedStatement preparedStatement = con
-                    .prepareStatement("delete from questions where id = ?");
-            preparedStatement.setBytes(1, asBytes(sid));
-            int row = preparedStatement.executeUpdate();
-            preparedStatement.close();
-            con.close();
-        } catch (SQLException ex) {
-            while (ex != null) {
-                System.out.println("Message: " + ex.getMessage());
-                System.out.println("SQLState: " + ex.getSQLState());
-                System.out.println("ErrorCode: " + ex.getErrorCode());
-                ex = ex.getNextException();
-                System.out.println("");
-            }
+            String id = sid.toString().replace("-", "").toUpperCase();
+            repo.delete("questions", "id = '"+id+"'");
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
         response.setStatus(200);
-        // response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
     }
 
     public static byte[] asBytes(UUID uuid) {
@@ -353,43 +255,24 @@ public class EditQuestionServlet extends HttpServlet {
     }
 
     public static String[] getAnswers(byte[] questionId) {
-        Connection con = null;
+        Repository repo = new Repository();
+        repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         String[] answers = { null, null, null, null };
-        String errMsg = null;
 
         try {
-            con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "oracle1");
-            PreparedStatement stmt = con
-                    .prepareStatement(
-                            "select answer_text, is_correct, answer_index from answers where question_id = ?");
-            stmt.setBytes(1, questionId);
-            ResultSet rs = stmt.executeQuery();
-
+            String id = asUuid(questionId).toString().replace("-", "").toUpperCase();
+            repo.select("answer_text, is_correct, answer_index", "answers", "question_id = '"+id+"'");
             String aText;
-            String isCorr;
             int aIdx;
-            while (rs.next()) {
-                aText = rs.getString(1);
-                isCorr = rs.getString(2);
-                aIdx = rs.getInt(3);
+            while (repo.rs.next()) {
+                aText = repo.rs.getString(1);
+                aIdx = repo.rs.getInt(3);
 
                 answers[aIdx] = aText;
             }
-
-            stmt.close();
-            con.close();
-        } catch (SQLException ex) {
-
-            errMsg = errMsg + "\n--- SQLException caught ---\n";
-            while (ex != null) {
-                errMsg += "Message: " + ex.getMessage();
-                errMsg += "SQLState: " + ex.getSQLState();
-                errMsg += "ErrorCode: " + ex.getErrorCode();
-                ex = ex.getNextException();
-                errMsg += "";
-            }
-            System.out.println(errMsg);
+            repo.close();
+        } catch (Exception e) {
+            System.out.println(e);
         }
 
         return answers;

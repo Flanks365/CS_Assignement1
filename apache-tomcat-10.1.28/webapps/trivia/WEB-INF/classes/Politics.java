@@ -38,7 +38,7 @@ public class Politics extends HttpServlet {
 
         String categoryName = request.getParameter("category_name").trim();
         
-        //categoryName="Science";
+        // categoryName="Science";
         if (categoryName == null || categoryName.isEmpty()) {
             response.getWriter().write("Category not provided.");
             return;

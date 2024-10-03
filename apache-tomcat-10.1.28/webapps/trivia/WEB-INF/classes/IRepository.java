@@ -7,6 +7,7 @@ public interface IRepository  {
   void insert(String tableString, String setString, String valueString);
   void insert(String tableString, String setString, String valueString, String type, InputStream is);
   void update(String tableString, String setString, String conditionString);
+  void update(String tableString, String setString, InputStream is);
   void delete(String tableString, String conditionString);
   void select(String fieldString, String tableString, String conditionString);
   void select(String fieldString, String tableString);

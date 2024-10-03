@@ -93,13 +93,13 @@ public class EditQuizzesServlet extends HttpServlet {
         try {
             try {
                 quizId = UUID.fromString(request.getParameter("id"));
-                asBytes(quizId);
             } catch (Exception ex) {
                 System.out.println("Error: " + ex.getMessage());
             }
             if (quizId != null) {
-                repo.update("categories", "category_name = "+name+", image_type = "+contentType
-                    + ", image = "+filePart.getInputStream(), "id = "+asBytes(quizId));
+                String quizIdAsString = quizId.toString().replace("-", "");
+                repo.update("categories", "category_name = '"+name+"', image_type = '"+contentType
+                    + "', image = ?, id = '"+quizIdAsString+"'",filePart.getInputStream());
             } else {
                 quizId = UUID.randomUUID();
                 String quizIdAsString = quizId.toString().replace("-", "");

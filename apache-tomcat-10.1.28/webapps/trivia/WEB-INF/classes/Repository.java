@@ -130,6 +130,26 @@ public class Repository implements IRepository{
     }  
   }
 
+  public void update(String tableString, String setString, InputStream is) {
+    try {
+      PreparedStatement stmt = con.prepareStatement("update "+ tableString +" set " + setString );
+      System.out.println("update "+ tableString +" set " + setString );
+      stmt.setBinaryStream(1, is);
+      rs = stmt.executeQuery();
+    } catch (SQLException ex) {
+      String errMsg = "";
+      errMsg += "\n--- SQLException caught ---\n";
+      while (ex != null) {
+         errMsg += "Message: " + ex.getMessage();
+         errMsg += "SQLState: " + ex.getSQLState();
+         errMsg += "ErrorCode: " + ex.getErrorCode();
+         ex = ex.getNextException();
+         errMsg += "";
+      }
+      System.out.println(errMsg);    
+    }  
+  }
+
   public void delete(String tableString, String conditionString) {
     try {
       PreparedStatement stmt = con.prepareStatement("delete from "+tableString+" where " + conditionString);

@@ -57,20 +57,22 @@ function fetchQuizData(){
 
             
 
-            output += "<div class=\"container\" id=\""+ number +"\"><h1>" + 
-            message + "</h1>"+
-            "<div class=\"edit-quiz-container\"\n> "
-            +"<form class=\"quiz-edit-form\" enctype=\"multipart/form-data\">"
-            + "<input type=\"hidden\" name=\"id\" value=\""+number+"\"/>"
-            +"<input type=\"hidden\" name=\"quizName\" value=\"" + message + "\"/>"+
-            "<input required id=\"new-quiz-name\" type=\"text\" name =\"QuizName\" "+
-            "value=\"" + message + "\" placeholder=\"Name\" />"+
-            "Image <input required type=\"file\" name=\"FileName\" accept=\"image/*\" />" 
-            +"<input id=\"submit\" type=\"submit\" value=\"Submit\" />"
-            +"</form>" +
-            "<button class=\"quiz-select-button\">Edit Questions</button>"+
-            "<button class=\"quiz-delete-button\">Delete</button>"
-            +"<button class=\"quiz-edit-button\">Edit</button></div>\n";
+     output += "<div class=\"container\"><h1>" + 
+    message + "</h1>" +
+    "<div class=\"edit-quiz-container\">" +
+    "<form class=\"quiz-edit-form\" id=\"edit-" + number + "\" enctype=\"multipart/form-data\">" +
+    "<input type=\"hidden\" name=\"id\" value=\"" + number + "\"/>" +
+    "<input type=\"hidden\" name=\"quizName\" value=\"" + message + "\"/>" +
+    "<input required id=\"new-quiz-name\" type=\"text\" name=\"QuizName\" " +
+    "value=\"" + message + "\" placeholder=\"Name\" />" +
+    "Image <input required type=\"file\" name=\"FileName\" accept=\"image/*\" />" +
+    "<button type=\"button\" id=\"" + number + "\" onclick=\"submitUpdateQuiz(this.id)\">Submit</button>" + // Updated button
+    "</form>" +
+    "<button class=\"quiz-select-button\">Edit Questions</button>" +
+    "<button class=\"quiz-delete-button\" id=\"" + number + "\" onclick=\"deleteQuiz(this.id)\">Delete</button>" +
+    "<button class=\"quiz-edit-button\">Edit</button>" +
+    "</div></div>\n";
+
         })
 
         document.getElementById("test").innerHTML = output;
@@ -219,53 +221,36 @@ function fetchQuizData(){
             button.addEventListener('click', toggleEditForm);
         })
 
-        document.querySelectorAll(".quiz-edit-form").forEach(container => {
-            container.addEventListener('submit', function(event){
-                const formData = new FormData(this);
-    
-                fetch("../editQuizzes", {
-                    method:"POST",
-                    body: formData
-                }).then(response =>{
-                    if(response.ok){
-                        return
-                    }
-                    throw new Error('Fetch Update failed')
-                }).then(() =>{
-                    location.reload();
-                })
-            })
-        })  
+        
         
 
        
 
         var deleteButton = document.querySelectorAll('.quiz-delete-button');
-        deleteButton.forEach(container=>{
-           container.addEventListener('click', function() {
-                const url = '/trivia/editQuizzes?id=' + quizId
-                    
-                fetch(url, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return
-                    }
-                    throw new Error('Fetch delete failed.');
-                })
-                .then(() => {
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        })
+        
     })
     .catch(error => console.error('error Fetching Json: ', error))
 }
 
+function deleteQuiz(buttonId){
+    const url = '/trivia/editQuizzes?id=' + buttonId;
+             
+    fetch(url, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (response.ok) {
+            return
+        }
+        throw new Error('Fetch delete failed.');
+    })
+    .then(() => {
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
 
     function deleteQuestionData(buttonId){
@@ -374,6 +359,38 @@ function fetchQuizData(){
     });
     }
 
+
+
+
+
+    function submitUpdateQuiz(buttonId) {
+        const form = document.getElementById(`edit-${buttonId}`); // Get the form associated with the quiz ID
+    
+        // Create a FormData object from the form
+        const formData = new FormData(form);
+    
+        // Send the POST request to ../editQuizzes
+        fetch("../editQuizzes", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Update failed with status: ' + response.status);
+            }
+            return response.json(); // Assuming you want to handle a JSON response
+        })
+        .then(data => {
+            console.log('Update successful:', data);
+            location.reload(); // Reload the page to see changes
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Optionally handle error (e.g., show an error message)
+        });
+    }
+
+
     function submitUpdateData(buttonId) {
         // Use the buttonId to get the form associated with the button
         const form = document.getElementById(`edit-form-${buttonId}`);
@@ -404,5 +421,6 @@ function fetchQuizData(){
             // Optionally handle error (e.g., show an error message)
         });
     }
+    
     
 

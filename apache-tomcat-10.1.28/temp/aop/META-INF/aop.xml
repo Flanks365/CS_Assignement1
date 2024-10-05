@@ -1,0 +1,6 @@
+<!-- aop.xml -->
+<aspectj>
+    <aspects>
+        <aspect name="com.example.aspects.BasicAspect"/>
+    </aspects>
+</aspectj>

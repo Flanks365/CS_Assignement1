@@ -2,9 +2,14 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.nio.*;
+import java.sql.SQLException;
+import java.util.stream.*;
 
 public class CategoriesServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -44,60 +49,50 @@ public class CategoriesServlet extends HttpServlet {
 
 		html += "</div>" + "<h1 align=\"center\">" + title + "</h1>\n";
 
-		// used for rendering image
-		byte bArr[] = null;
-		String imgType = null;
+		//Categories
+		html += "<div class=\"categories\">";
 
 		// Rendering questions Netflix style
 		Repository repo = new Repository();
-    repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-    try {
-			repo.select("*", "categories");
-			boolean hasNextTuple = true; // used to check if there is another line in the categories table
-			if (!repo.rs.next()) {
-				html += "<br><br><br><h2 align=\"center\">No quizzes to display</h2>";
-				hasNextTuple = false;
-			}
-			html += "<div class=\"categories\">";
-			// loops through all the categories in categories table
-			while (hasNextTuple) {
+		repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
+		repo.select("*", "categories");
 
-				// retrieving blob from database
-				imgType = repo.rs.getString(3);
-				bArr = repo.getBlobAsBytes("image");
+		//Contains each category cards info 
+		List<Category> categoriesInfo = getCategories(repo);
 
-				html += "<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n";
+		//Will contain each category card
+		final ArrayList<String> categoryStrings = new ArrayList<String>();
 
-				html += "<h3>" + repo.rs.getString("CATEGORY_NAME") + "</h3>\n" +
-						"<img class=\"categoryImg\" src=\"data:" + imgType + ";base64," +
-						Base64.getEncoder().encodeToString(bArr) + "\" />" +
-						"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
-						"<input type=\"hidden\" name=\"category_name\" value=\" " + repo.rs.getString("CATEGORY_NAME") + "\">\n"
-						+
-						"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
-						"<input type=\"submit\" value=\" Play Quiz" + "\" />\n" +
-						"</form>\n" +
-						"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
-						"<input type=\"hidden\" name=\"category_name\" value=\" " + repo.rs.getString("CATEGORY_NAME") + "\">\n"
-						+
-						"<input type=\"hidden\" name=\"autoplay\" value=\"true\">\n" +
-						"<input type=\"submit\" value=\"Autoplay Quiz\" />\n" +
-						"</form>\n" +
-						"</div><br><br>\n";
-				if (!repo.rs.next()) {
-					break;
-				}
-			}
-			html += "</div>";
-			html += "<br><br><br><form action=\"main\" method=\"get\">" +
-					"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
-					"</form>";
-
-			repo.close();
-			System.out.println("\n\n");
-		} catch (Exception e) {
-			System.out.println(e);	
+		//Dynamically creates cards for each category in the database
+		categoriesInfo.stream().forEach(category -> {
+			categoryStrings.add("<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n" +
+			"<h3>" + category.getName() + "</h3>\n" +
+			"<img class=\"categoryImg\" src=\"data:" + category.getImageType() + ";base64," +
+			Base64.getEncoder().encodeToString(category.getImage()) + "\" />" +
+			"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
+			"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
+			+
+			"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
+			"<input type=\"submit\" value=\" Play Quiz" + "\" />\n" +
+			"</form>\n" +
+			"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
+			"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
+			+
+			"<input type=\"hidden\" name=\"autoplay\" value=\"true\">\n" +
+			"<input type=\"submit\" value=\"Autoplay Quiz\" />\n" +
+			"</form>\n" +
+			"</div><br><br>\n");
+		});
+    
+		//Puts all the cards in the html string
+		for (int i = 0; i < categoryStrings.size(); i++) {
+			html += categoryStrings.get(i);
 		}
+
+		html += "</div>";
+		html += "<br><br><br><form action=\"main\" method=\"get\">" +
+				"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
+				"</form>";
 
 		PrintWriter out = response.getWriter();
 		out.println(html);
@@ -116,4 +111,46 @@ public class CategoriesServlet extends HttpServlet {
 		long secondLong = bb.getLong();
 		return new UUID(firstLong, secondLong);
 	}
+
+	//Creates a list of Category objects that contain the category info from the database
+	public List<Category> getCategories(Repository repo) {
+    	List<Category> categories = new ArrayList<>();
+    	try {
+    	    while (repo.rs.next()) {
+    	        String categoryName = repo.rs.getString("CATEGORY_NAME");
+    	        String imgType = repo.rs.getString(3);
+    	        byte[] image = repo.getBlobAsBytes("image");
+
+    	        categories.add(new Category(categoryName, imgType, image));
+    	    }
+    	} catch (SQLException e) {
+    	    e.printStackTrace();
+    	}
+    	return categories;
+	}
+}
+
+//Holds category info for single category
+class Category {
+    private String name;
+    private String imageType;
+    private byte[] image;
+
+    public Category(String name, String imageType, byte[] image) {
+        this.name = name;
+        this.imageType = imageType;
+        this.image = image;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
 }

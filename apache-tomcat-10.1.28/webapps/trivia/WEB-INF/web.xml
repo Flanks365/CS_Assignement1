@@ -6,10 +6,10 @@
 
 <web-app>
 
-  <servlet-mapping>
+  <!-- <servlet-mapping>
     <servlet-name>default</servlet-name>
     <url-pattern>/resources/*</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping> -->
 
   <servlet>
     <servlet-name>Quiz</servlet-name>
@@ -45,7 +45,7 @@
     <servlet-name>editQuizzes</servlet-name>
     <servlet-class>EditQuizzesServlet</servlet-class>
   </servlet>
-  
+
   <servlet-mapping>
     <servlet-name>editQuizzes</servlet-name>
     <url-pattern>/editQuizzes</url-pattern>
@@ -120,8 +120,8 @@
     <url-pattern>/categories</url-pattern>
   </servlet-mapping>
 
-  <servlet-mapping>
+  <!-- <servlet-mapping>
     <servlet-name>default</servlet-name>
     <url-pattern>/resources/css/*</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping> -->
 </web-app>

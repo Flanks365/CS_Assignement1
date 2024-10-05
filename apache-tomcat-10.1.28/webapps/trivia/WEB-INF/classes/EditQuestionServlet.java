@@ -6,6 +6,11 @@ import java.util.*;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.Gson;
+
 @MultipartConfig
 public class EditQuestionServlet extends HttpServlet {
     @Override
@@ -17,58 +22,35 @@ public class EditQuestionServlet extends HttpServlet {
             response.setStatus(302);
             response.sendRedirect("login");
         }
+
+        
+
+            List<DataBundle> sender = new ArrayList<>();
         System.out.println();
-        response.setContentType("text/html");
+         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        String docType = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n";
-        String html = docType + "<html>\n" +
-                "<head><title>Edit Quiz</title>" +
-                "<script src=\"resources/js/editQuestions.js\" async></script>" +
-                "<link rel=\"stylesheet\" href=\"resources/css/styles.css\" type=\"text/css\">\n" +
-                "</head>\n" +
-                "<body>\n";
+
+        
+
         Repository repo = new Repository();
         repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
+
             String quizName = request.getParameter("quizName");
             System.out.println("params: " + Arrays.toString(request.getParameterValues("quizName")));
 
             UUID quizId = UUID.fromString(request.getParameter("id"));
 
-            html += "<h1 align=\"center\">Edit Quiz: " + quizName + "</h1>\n" +
-                    "<p>Create a new question:</p>" +
-                    "<form id=\"new-question-form\" action=\"editQuestions\" method=\"POST\" enctype=\"multipart/form-data\">"
-                    +
-                    "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
-                    "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
-                    "<input type=\"textarea\" name=\"Question\" placeholder=\"Question\" required />" +
-                    "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" required />" +
-                    "<input type=\"textarea\" name=\"Decoy1\" placeholder=\"Decoy answer\" required />" +
-                    "<input type=\"textarea\" name=\"Decoy2\" placeholder=\"Decoy answer (optional)\" />" +
-                    "<input type=\"textarea\" name=\"Decoy3\" placeholder=\"Decoy answer (optional)\" /><br>" +
-                    "Content type: <input type=\"radio\" id=\"content-quote\" name=\"ContentType\" value=\"quote\">" +
-                    "<label for=\"content-quote\">Quote</label>" +
-                    "<input type=\"radio\" id=\"content-image\" name=\"ContentType\" value=\"image\">" +
-                    "<label for=\"content-image\">Image</label>" +
-                    "<input type=\"radio\" id=\"content-audio\" name=\"ContentType\" value=\"audio\">" +
-                    "<label for=\"content-audio\">Audio</label>" +
-                    "<input type=\"radio\" id=\"content-video\" name=\"ContentType\" value=\"video\">" +
-                    "<label for=\"content-video\">Video</label><br>" +
-                    "Content: " +
-                    "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
-                    "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" required />" +
-                    "<br><input type=\"submit\" value=\"Submit\"/>" +
-                    "</form>" +
-                    "<button id=\"form-toggle\">Create</button>";
             String id= request.getParameter("id").replace("-","").toUpperCase();
             repo.select("id, question_text, media_type, media_preview", "questions", "category_id = '"+id+"'");
             boolean hasResults = false;
             UUID sid = null;
             String[] answers = null;
 
+            
+
             while (repo.rs.next()) {
                 if (!hasResults) {
-                    html += "<p>Or edit an existing question: </p>";
                     hasResults = true;
                 }
 
@@ -91,54 +73,31 @@ public class EditQuestionServlet extends HttpServlet {
                     mediaType = mediaType.substring(0, mediaType.indexOf("/"));
                 }
 
-                html += "<div id=\"edit-question-" + sid + "\" class=\"question-edit-container\" " +
-                        "questionId=\"" + sid + "\">" + question +
-                        "<form class=\"question-edit-form\" id=\"edit-form-" + sid
-                        + "\" action=\"editQuestions\" method=\"POST\" enctype=\"multipart/form-data\">" +
-                        "<input type=\"hidden\" name=\"id\" value=\"" + quizId + "\" />" +
-                        "<input type=\"hidden\" name=\"quizName\" value=\"" + quizName + "\" />" +
-                        "<input type=\"hidden\" name=\"questionId\" value=\"" + sid + "\" />" +
-                        "<input type=\"textarea\" name=\"Question\" placeholder=\"Question text\" " +
-                        "value=\"" + question + "\" required />" +
-                        "<input type=\"textarea\" name=\"Answer\" placeholder=\"Answer\" " +
-                        "value=\"" + corrAns + "\" required />" +
-                        "<input type=\"textarea\" name=\"Decoy1\" placeholder=\"Decoy answer\" " +
-                        "value=\"" + decAns1 + "\" required />" +
-                        "<input type=\"textarea\" name=\"Decoy2\" placeholder=\"Decoy answer (optional)\" " +
-                        "value=\"" + decAns2 + "\" />" +
-                        "<input type=\"textarea\" name=\"Decoy3\" placeholder=\"Decoy answer (optional)\" " +
-                        "value=\"" + decAns3 + "\" /><br>" +
-                        "Content type: " +
-                        "<input type=\"hidden\" name=\"selectedContent\" value=\"" + mediaType + "\" />" +
-                        "<input type=\"radio\" class=\"radio-default\" id=\"content-quote\" name=\"ContentType\" value=\"quote\">"
-                        +
-                        "<label for=\"content-quote\">Quote</label>" +
-                        "<input type=\"radio\" id=\"content-image\" name=\"ContentType\" value=\"image\">" +
-                        "<label for=\"content-image\">Image</label>" +
-                        "<input type=\"radio\" id=\"content-audio\" name=\"ContentType\" value=\"audio\">" +
-                        "<label for=\"content-audio\">Audio</label>" +
-                        "<input type=\"radio\" id=\"content-video\" name=\"ContentType\" value=\"video\">" +
-                        "<label for=\"content-video\">Video</label><br>" +
-                        "Content: " +
-                        "<p>Current: " + mediaPreview + "</p>" +
-                        "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
-                        "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" />" +
-                        "<br><input type=\"submit\" value=\"Update\" />" +
-                        "</form>" +
-                        "<button class=\"question-edit-toggle\" id=\"question-edit-toggle-" + sid + "\">Edit</button>" +
-                        "<button class=\"question-delete\" id=\"question-delete-" + sid + "\">Delete</button><br>" +
-                        "</div>";
+                DataBundle a = new DataBundle(quizName,sid,corrAns,decAns1,decAns2,decAns3,
+                mediaType,mediaPreview,question);
+
+
+                sender.add(a);
             }
-            html += "<br><br><br><form action=\"editQuizzes\" method=\"get\">" +
-                    "<input type=\"submit\" value=\"Back to Edit Quizzes Page\"/>\n" +
-                    "</form>";
+         
             repo.close();
         } catch (Exception e) {
             System.out.println(e);
         }
-        html += "</body></html>";
-        PrintWriter out = response.getWriter();
-        out.println(html);
+
+        Gson gson = new Gson();
+        // Convert to JSON
+        String jsonResponse = gson.toJson(sender);
+    
+
+        try {
+             PrintWriter out = response.getWriter();
+             out.write(jsonResponse);
+            out.flush(); // Ensure everything is written out
+             out.close();
+            } catch (IOException e) {
+          System.err.println("Error writing response: " + e.getMessage());
+};
     }
 
     @Override
@@ -163,11 +122,15 @@ public class EditQuestionServlet extends HttpServlet {
         String decoy2 = request.getParameter("Decoy2");
         String decoy3 = request.getParameter("Decoy3");
 
+        System.out.println("Quiz id: " + quizId);
+        System.out.println("Quiz Name: " + name);
+
         System.out.println("questionId: " + sid);
         System.out.println("answer: " + answer);
         System.out.println("decoy1: " + decoy1);
         System.out.println("decoy2: " + decoy2);
         System.out.println("decoy3: " + decoy3);
+        System.out.println("Content Type: " + contentType);
 
         InputStream is;
         if (!contentType.equals("quote")) {
@@ -220,19 +183,52 @@ public class EditQuestionServlet extends HttpServlet {
             System.out.println(e);
         }
         response.setStatus(200);
-        response.sendRedirect("/trivia/editQuestions?id=" + quizId + "&quizName=" + name);
     }
+
+    public class DataBundle{
+                public String quizName = null;
+                public UUID sid = null;
+                public String corrAns;
+                public  String decAns1;
+                public  String decAns2;
+                public  String decAns3;
+
+                public  String media_type;
+                public  String media_preview;
+
+                public  String question;
+
+                public DataBundle(String qName, UUID id, String corr, String decoy,
+                String decoy2, String decoy3, String medTyp, String medPre, String quest){
+                        this.quizName = qName;
+                        this.sid = id;
+                        this.corrAns = corr;
+                        this.decAns1 = decoy;
+                        this.decAns2 = decoy2;
+                        this.decAns3 = decoy3;
+
+                        this.media_type = medTyp;
+                        this.media_preview = medPre;
+
+                        this.question = quest;
+                }
+            }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+                System.out.println("delete has been requested");
         UUID sid = null;
         Repository repo = new Repository();
         repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
         try {
+            System.out.println(request.getParameter("questionId"));
             sid = UUID.fromString(request.getParameter("questionId"));
             String id = sid.toString().replace("-", "").toUpperCase();
-            repo.delete("questions", "id = '"+id+"'");
+
+            System.out.println("this is the qid being delete: " + id);
+            repo.delete("questions", "id ='"+id+"'");
             repo.close();
         } catch (Exception e) {
             System.out.println(e);

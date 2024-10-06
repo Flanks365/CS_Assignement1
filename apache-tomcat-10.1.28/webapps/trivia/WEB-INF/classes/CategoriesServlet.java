@@ -36,7 +36,7 @@ public class CategoriesServlet extends HttpServlet {
 		if (role.equals("admin")) {
 			System.out.println("in admin");
 			html += "<div style=\"text-align: center;\">\n" +
-					"<form action=\"editQuizzes\" method=\"GET\">\n" +
+					"<form action=\"editQuiz/index.html\" method=\"GET\">\n" +
 					"<input type=\"submit\" value=\"Edit Quizzes\" />\n" +
 					"</form>\n" +
 					"</div>\n";
@@ -49,70 +49,58 @@ public class CategoriesServlet extends HttpServlet {
 
 		html += "</div>" + "<h1 align=\"center\">" + title + "</h1>\n";
 
+		html += "<form>" +
+				"<input type=\"button\" onclick=\"window.location.href='moderatedQuiz.html';\" value=\"Join Moderated Quiz\"/>\n"
+				+
+				"</form>";
+
 		// Categories
 		html += "<div class=\"categories\">";
 
 		// Rendering questions Netflix style
 		Repository repo = new Repository();
 		repo.init("jdbc:oracle:thin:@localhost:1521:XE", "system", "oracle1");
-		try {
-			repo.select("*", "categories");
-			boolean hasNextTuple = true; // used to check if there is another line in the categories table
-			if (!repo.rs.next()) {
-				html += "<br><br><br><h2 align=\"center\">No quizzes to display</h2>";
-				hasNextTuple = false;
-			}
-			html += "<form>" +
-					"<input type=\"button\" onclick=\"window.location.href='moderatedQuiz.html';\" value=\"Join Moderated Quiz\"/>\n"
+		repo.select("*", "categories");
+
+		// Contains each category cards info
+		List<Category> categoriesInfo = getCategories(repo);
+
+		// Will contain each category card
+		final ArrayList<String> categoryStrings = new ArrayList<String>();
+
+		// Dynamically creates cards for each category in the database
+		categoriesInfo.stream().forEach(category -> {
+			categoryStrings.add("<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n" +
+					"<h3>" + category.getName() + "</h3>\n" +
+					"<img class=\"categoryImg\" src=\"data:" + category.getImageType() + ";base64," +
+					Base64.getEncoder().encodeToString(category.getImage()) + "\" />" +
+					"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
+					"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
 					+
-					"</form>";
-			html += "<div class=\"categories\">";
-			// loops through all the categories in categories table
-			while (hasNextTuple) {
+					"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
+					"<input type=\"submit\" value=\" Play Quiz" + "\" />\n" +
+					"</form>\n" +
+					"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
+					"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
+					+
+					"<input type=\"hidden\" name=\"autoplay\" value=\"true\">\n" +
+					"<input type=\"submit\" value=\"Autoplay Quiz\" />\n" +
+					"</form>\n" +
+					"</div><br><br>\n");
+		});
 
-				// Contains each category cards info
-				List<Category> categoriesInfo = getCategories(repo);
-
-				// Will contain each category card
-				final ArrayList<String> categoryStrings = new ArrayList<String>();
-
-				// Dynamically creates cards for each category in the database
-				categoriesInfo.stream().forEach(category -> {
-					categoryStrings.add("<br><br><div class=\"categoryContainer\" style=\"display:flex;\">\n" +
-							"<h3>" + category.getName() + "</h3>\n" +
-							"<img class=\"categoryImg\" src=\"data:" + category.getImageType() + ";base64," +
-							Base64.getEncoder().encodeToString(category.getImage()) + "\" />" +
-							"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
-							"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
-							+
-							"<input type=\"hidden\" name=\"autoplay\" value=\"false\">\n" +
-							"<input type=\"submit\" value=\" Play Quiz" + "\" />\n" +
-							"</form>\n" +
-							"<form style=\"border:0px;\" action=\"Quizpage\" method=\"get\">\n" +
-							"<input type=\"hidden\" name=\"category_name\" value=\" " + category.getName() + "\">\n"
-							+
-							"<input type=\"hidden\" name=\"autoplay\" value=\"true\">\n" +
-							"<input type=\"submit\" value=\"Autoplay Quiz\" />\n" +
-							"</form>\n" +
-							"</div><br><br>\n");
-				});
-
-				// Puts all the cards in the html string
-				for (int i = 0; i < categoryStrings.size(); i++) {
-					html += categoryStrings.get(i);
-				}
-
-				html += "</div>";
-				html += "<br><br><br><form action=\"main\" method=\"get\">" +
-						"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
-						"</form>";
-
-				PrintWriter out = response.getWriter();
-				out.println(html);
-			}
-		} catch (Exception e) {
-
+		// Puts all the cards in the html string
+		for (int i = 0; i < categoryStrings.size(); i++) {
+			html += categoryStrings.get(i);
 		}
+
+		html += "</div>";
+		html += "<br><br><br><form action=\"main\" method=\"get\">" +
+				"<input type=\"submit\" value=\"Back to Main Page\"/>\n" +
+				"</form>";
+
+		PrintWriter out = response.getWriter();
+		out.println(html);
 	}
 
 	public static byte[] asBytes(UUID uuid) {

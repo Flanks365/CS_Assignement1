@@ -3,6 +3,7 @@
 const answers = []
 const answerCounts = {}
 const quizData = {}
+var showCounts = true;
 
 console.log('test')
 
@@ -43,6 +44,8 @@ Chat.connect = (function (host) {
                 setAnswer(parsedMessage)
             if (parsedMessage.dataType == 'join')
                 resendQuestion()
+            if (parsedMessage.dataType == 'disconnect')
+                removeAnswer(parsedMessage)
         } catch (e) {
             console.log("Failed to parse message details: " + e);
             console.log("Message: " + message.data)
@@ -78,9 +81,18 @@ Chat.initialize = function () {
     quizData.answers = answers
 
     document.getElementById('counter-toggle').addEventListener('click', toggleAnswerCounts)
-    document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
-        buttonContainer.querySelector('span').style.display = 'none'
-    })
+    // document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+    //     buttonContainer.querySelector('span').style.display = 'none'
+    // })
+
+    // var showCounts = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    // const myParam = urlParams.get('autoplay');
+    showCounts = urlParams.get('showCounts') == 'true' || urlParams.get('showCounts') == null;
+    console.log(urlParams.get('showCounts'))
+    console.log(showCounts)
+    setAnswerCounts(showCounts)
+
 
     if (window.location.protocol == 'http:') {
         Chat.connect('ws://' + window.location.host + '/trivia/websocket/quiz');
@@ -119,7 +131,8 @@ function selectAnswer(element, categoryName, answerId, questionId, autoplay, cur
                     toggleButtonsDisabled(buttons)
                     element.classList.remove('correctButton')
                     window.location.href = "Quizpage?category_name=" + categoryName +
-                        "&autoplay=" + autoplay + "&currentQuestionIndex=" + (currentIndex + 1)
+                        "&autoplay=" + autoplay + "&currentQuestionIndex=" + (currentIndex + 1) +
+                        "&showCounts=" + showCounts
                 }, 1000)
 
             } else {
@@ -146,7 +159,7 @@ window.addEventListener('load', () => {
     const questionInfo = document.getElementById('questionInfo');
     if (autoplay == 'true') {
         let corrButton = document.getElementById(correctAnswerID);
-        let secondsRemaining = 5
+        let secondsRemaining = 10
         questionInfo.innerHTML = "Time left: " + secondsRemaining
         const myInterval = setInterval(() => {
             secondsRemaining--
@@ -172,22 +185,28 @@ window.addEventListener('load', () => {
 })
 
 
-var showCounts = true;
-function toggleAnswerCounts(e) {
-    if (e.target.innerHTML == "Show answer counts") {
+function setAnswerCounts(show) {
+    const button = document.getElementById('counter-toggle')
+    if (show) {
         document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
             buttonContainer.querySelector('span').style.display = ''
         })
         countAnswers()
-        e.target.innerHTML = "Hide answer counts";
+        button.innerHTML = "Hide answer counts";
         showCounts = true
     } else {
         document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
             buttonContainer.querySelector('span').style.display = 'none'
         })
-        e.target.innerHTML = "Show answer counts";
+        button.innerHTML = "Show answer counts";
         showCounts = false
+        console.log('set false')
     }
+}
+
+
+function toggleAnswerCounts(e) {
+    setAnswerCounts(e.target.innerHTML == "Show answer counts")  
 }
 
 
@@ -196,6 +215,17 @@ function setAnswer(message) {
         answerCounts[answer].delete(message.id)
     }
     answerCounts[message.selection].add(message.id)
+    if (showCounts) {
+        countAnswers()
+    }
+}
+
+function removeAnswer(message) {
+    console.log('in remove')
+    for (let answer in answerCounts) {
+        answerCounts[answer].delete(message.id)
+    }
+    // answerCounts[message.selection].add(message.id)
     if (showCounts) {
         countAnswers()
     }

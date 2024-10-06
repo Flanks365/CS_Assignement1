@@ -14,12 +14,12 @@ public class BasicAspect {
     @Before("   call(void java.io.PrintStream.println(String)) " +
             "&& !within(com.example.aspects..*)")
     public void beforePrintlnCall() {
-        System.out.println("About to make call to print Hello World");
+        System.out.println("About to make call aspects");
     }
  
     @After("    call(void java.io.PrintStream.println(String)) " +
            "&&  !within(com.example.aspects..*)")
     public void afterPrintlnCall() {
-        System.out.println("Just made call to print Hello World");
+        System.out.println("Aspects Complete!");
     }
 }

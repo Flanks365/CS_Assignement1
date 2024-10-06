@@ -195,7 +195,7 @@ function fetchQuizData() {
                                     "<p>Current: " + mediaPrev + "</p>" +
                                     "<input class=\"file-input\" type=\"file\" name=\"FileName\" />" +
                                     "<input class=\"quote-input\" type=\"text\" name=\"QuoteText\" placeholder=\"Quote\" />" +
-                                    "<br><button id=\"" + questId + "\" onclick=\"submitUpdateData(this.id)\"/>" +
+                                    "<br><button id=\"" + questId + "\" onclick=\"submitUpdateData(this.id)\">Submit</button>" +
                                     "</form>" +
                                     "<button class=\"question-edit-toggle\" id=\"" + questId + "\" onclick=\"toggleEditsForm(this.id)\">Edit</button>" +
                                     "<button class=\"question-delete\" id=\"" + questId + "\" onclick=\"deleteQuestionData(this.id)\">Delete</button><br>" +
@@ -368,6 +368,8 @@ function submitFormData() {
 
 
 function submitUpdateQuiz(buttonId) {
+    event.preventDefault()
+    
     const form = document.getElementById(`edit-${buttonId}`); // Get the form associated with the quiz ID
 
     // Create a FormData object from the form
@@ -396,6 +398,7 @@ function submitUpdateQuiz(buttonId) {
 
 
 function submitUpdateData(buttonId) {
+    event.preventDefault();
     // Use the buttonId to get the form associated with the button
     const form = document.getElementById(`edit-form-${buttonId}`);
 

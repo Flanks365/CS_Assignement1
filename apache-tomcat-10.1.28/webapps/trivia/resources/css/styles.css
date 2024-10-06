@@ -141,3 +141,38 @@ button:disabled {
 .done{
   background-color: grey;
 }
+
+.selected {
+  /* background-color: brown; */
+  border: 3px solid rgb(222, 151, 50);
+}
+
+.answers {
+  display: flex;
+}
+
+.button-container {
+  margin: 0.5em;
+  /* padding: 0.5em; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgb(66, 66, 66);
+}
+
+.button-container button {
+  margin: 0;
+  /* padding: 0.5em; */
+}
+
+.answer-counter {
+  padding: 0.5em;
+}
+
+.answer-container {
+  display: flex;
+}
+
+.answer-container button {
+  width: 50%;
+}

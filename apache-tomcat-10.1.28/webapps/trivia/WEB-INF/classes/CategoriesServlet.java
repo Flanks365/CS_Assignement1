@@ -58,6 +58,9 @@ public class CategoriesServlet extends HttpServlet {
 				html += "<br><br><br><h2 align=\"center\">No quizzes to display</h2>";
 				hasNextTuple = false;
 			}
+			html += "<form>" +
+				"<input type=\"button\" onclick=\"window.location.href='moderatedQuiz.html';\" value=\"Join Moderated Quiz\"/>\n" +
+					"</form>";
 			html += "<div class=\"categories\">";
 			// loops through all the categories in categories table
 			while (hasNextTuple) {

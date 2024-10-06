@@ -1,12 +1,118 @@
+// "use strict";
+
+const answers = []
+const answerCounts = {}
+const quizData = {}
+
+console.log('test')
+
+var Chat = {};
+
+Chat.socket = null;
+
+Chat.connect = (function (host) {
+    if ('WebSocket' in window) {
+        Chat.socket = new WebSocket(host);
+    } else if ('MozWebSocket' in window) {
+        Chat.socket = new MozWebSocket(host);
+    } else {
+        console.log('Error: WebSocket is not supported by this browser.');
+        return;
+    }
+
+    Chat.socket.onopen = function () {
+        console.log('Info: WebSocket connection opened.');
+        Chat.socket.send(JSON.stringify(quizData))
+        // document.getElementById('chat').onkeydown = function (event) {
+        //     if (event.keyCode == 13) {
+        //         Chat.sendMessage();
+        //     }
+        // };
+    };
+
+    Chat.socket.onclose = function () {
+        // document.getElementById('chat').onkeydown = null;
+        console.log('Info: WebSocket closed.');
+    };
+
+    Chat.socket.onmessage = function (message) {
+        try {
+            const parsedMessage = JSON.parse(message.data)
+            console.log(parsedMessage);
+            if (parsedMessage.dataType == 'remoteSelection')
+                setAnswer(parsedMessage)
+            if (parsedMessage.dataType == 'join')
+                resendQuestion()
+        } catch (e) {
+            console.log("Failed to parse message details: " + e);
+            console.log("Message: " + message.data)
+        }
+    };
+});
+
+Chat.initialize = function () {
+    // Remove elements with "noscript" class - <noscript> is not allowed in XHTML
+    var noscripts = document.getElementsByClassName("noscript");
+    for (var i = 0; i < noscripts.length; i++) {
+        noscripts[i].parentNode.removeChild(noscripts[i]);
+    }
+
+    const questionText = document.querySelector('.question').querySelector('h3').innerHTML
+    console.log(questionText)
+
+    // answers = []
+    // answerCounts = {}
+
+    document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+        const button = buttonContainer.querySelector('button')
+        answers.push({ id: button.dataset.answerId, text: button.innerHTML })
+        answerCounts[button.dataset.answerId] = new Set()
+    })
+    console.log(answers)
+
+
+
+    // const quizData = {}
+    quizData.dataType = "newQuestion"
+    quizData.message = questionText
+    quizData.answers = answers
+
+    document.getElementById('counter-toggle').addEventListener('click', toggleAnswerCounts)
+    document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+        buttonContainer.querySelector('span').style.display = 'none'
+    })
+
+    if (window.location.protocol == 'http:') {
+        Chat.connect('ws://' + window.location.host + '/trivia/websocket/quiz');
+    } else {
+        Chat.connect('wss://' + window.location.host + '/trivia/websocket/quiz');
+    }
+};
+
+
+if (document.readyState !== 'loading') {
+    Chat.initialize();
+} else {
+    document.addEventListener("DOMContentLoaded", function () {
+        Chat.initialize();
+    }, false);
+}
+
+console.log('test')
+
+
 function selectAnswer(element, categoryName, answerId, questionId, autoplay, currentIndex) {
     console.log(element)
     console.log('Fetching answer for questionId:', questionId, 'and answerId:', answerId)
     fetch('getCorrectAnswer?questionId=' + questionId + '&answerId=' + answerId)
         .then(response => response.text())
         .then(result => {
-            const buttons = element.parentNode.childNodes
+            const buttons = element.parentNode.parentNode.childNodes
             console.log(buttons)
             if (result === 'correct') {
+                const message = { dataType: 'hostAnswered', message: 'Correct answer: ' + element.innerHTML, selection: answerId }
+                console.log(message)
+                Chat.socket.send(JSON.stringify(message))
                 toggleButtonsDisabled(buttons)
                 element.classList.add('correctButton')
                 setTimeout(() => {
@@ -30,11 +136,9 @@ function selectAnswer(element, categoryName, answerId, questionId, autoplay, cur
 
 function toggleButtonsDisabled(buttons) {
     buttons.forEach(button => {
-        button.disabled = !button.disabled
+        button.querySelector('button').disabled = !button.querySelector('button').disabled
     })
 }
-
-
 
 window.addEventListener('load', () => {
     const autoplay = document.getElementById('autoplay').value;
@@ -47,8 +151,12 @@ window.addEventListener('load', () => {
         const myInterval = setInterval(() => {
             secondsRemaining--
             questionInfo.innerHTML = "Time left: " + secondsRemaining
-            if (!secondsRemaining)
+            if (!secondsRemaining) {
+                const message = { dataType: 'hostAnswered', message: 'Correct answer: ' + corrButton.innerHTML, selection: correctAnswerID }
+                console.log(message)
+                Chat.socket.send(JSON.stringify(message))
                 startAnimation()
+            }
         }, 1000)
         function startAnimation() {
             corrButton.classList.add('animation')
@@ -64,38 +172,48 @@ window.addEventListener('load', () => {
 })
 
 
+var showCounts = true;
+function toggleAnswerCounts(e) {
+    if (e.target.innerHTML == "Show answer counts") {
+        document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+            buttonContainer.querySelector('span').style.display = ''
+        })
+        countAnswers()
+        e.target.innerHTML = "Hide answer counts";
+        showCounts = true
+    } else {
+        document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+            buttonContainer.querySelector('span').style.display = 'none'
+        })
+        e.target.innerHTML = "Show answer counts";
+        showCounts = false
+    }
+}
 
 
+function setAnswer(message) {
+    for (let answer in answerCounts) {
+        answerCounts[answer].delete(message.id)
+    }
+    answerCounts[message.selection].add(message.id)
+    if (showCounts) {
+        countAnswers()
+    }
+}
 
-// console.log(document.getElementById('quoteOrBlob'))
-// const media = document.getElementById('quoteOrBlob')
 
-// let bt = document.createElement("button")
-// bt.innerHTML = 'Accept'
-// let bt2 = document.createElement("button")
-// bt2.innerHTML = 'Now video'
-// media.insertAdjacentElement('beforeend', bt)
-// media.insertAdjacentElement('beforeend', bt2)
+function countAnswers() {
+    document.querySelector('.answers').querySelectorAll('.button-container').forEach(buttonContainer => {
+        const ansId = buttonContainer.querySelector('button').dataset.answerId
+        const counter = buttonContainer.querySelector('span')
+        // answers.push({id: button.dataset.answerId, text: button.innerHTML})
+        counter.innerHTML = answerCounts[ansId].size
+    })
+}
 
-// const audio = media.querySelector('video')
-// console.log(audio)
-// // let bt = document.getElementById("bt");
-// // console.log(audio);
-// bt.addEventListener("click", ()=>{
-//   audio.play();
-// });
-// bt2.addEventListener("click", changeMedia);
-// const startPlaying = ()=>{
-//   audio.removeEventListener('playing', startPlaying);
-//   bt.classList.add("hide");
-// //   audio.src = 'https://freesound.org/data/previews/475/475736_4397472-lq.mp3';
-//   audio.play();
-// }
-// function changeMedia() {
-//     audio.src = 'https://freesound.org/data/previews/475/475736_4397472-lq.mp3';
-//     audio.play();
-// }
-// audio.addEventListener('playing', startPlaying);
-// audio.addEventListener('error', ()=>{
-//   console.log("error");
-// });
+
+function resendQuestion() {
+    quizData.dataType = 'resendQuestion'
+    Chat.socket.send(JSON.stringify(quizData))
+}
+

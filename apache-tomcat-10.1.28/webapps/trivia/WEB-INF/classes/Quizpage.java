@@ -100,7 +100,8 @@ public class Quizpage extends HttpServlet {
                     String answerId = repo.rs.getString("id");
                     System.out.println("Answer ID: " + answerId); // Log raw answer ID
 
-                    questionHtml.append("<button onclick='selectAnswer(this, \"").append(categoryName).append("\", \"")
+                    questionHtml.append("<div class='button-container'><button data-answer-id='" + answerId + "' onclick='selectAnswer(this, \"")
+                            .append(categoryName).append("\", \"")
                             .append(answerId).append("\", \"").append(questionId).append("\", ")
                             .append(autoplay).append(", ").append(currentQuestionIndex).append(")'");
 
@@ -109,7 +110,7 @@ public class Quizpage extends HttpServlet {
                     } else {
                         questionHtml.append(">");
                     }
-                    questionHtml.append(answerText).append("</button>");
+                    questionHtml.append(answerText).append("</button><span class='answer-counter'>0</span></div>");
                 }
                 if (!autoplay.equals("false")) {
                     repo.select("id", "answers", "question_id = '"+qid+"' AND is_correct = 'Y'");
@@ -120,10 +121,9 @@ public class Quizpage extends HttpServlet {
 
                 questionHtml.append("</div>");
                 questionHtml.append("<p id=\"questionInfo\"></p>");
+                questionHtml.append("<button id='counter-toggle'>Show answer counts</button>");
                 questionHtml
                         .append("<br><br><button onclick=\"window.location.href='main'\">Back to Main Page</button>");
-                // questionHtml.append(
-                //         "<br><br><button onclick=\"window.location.href='categories'\">Back to Play Quizzes</button>");
                 questionHtml.append("</div></div>");
             } else {
                 questionHtml.append("<img src='https://images.slideplayer.com/20/5999287/slides/slide_30.jpg'>");

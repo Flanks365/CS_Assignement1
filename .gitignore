@@ -1,2 +1,4 @@
 #Ignore log files
 /apache-tomcat-10.1.28/logs/
+#ignore work directory
+/apache-tomcat-10.1.28/work/

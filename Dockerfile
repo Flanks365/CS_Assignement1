@@ -8,7 +8,7 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY trivia /usr/local/tomcat/webapps/trivia
 
 # Expose the port Tomcat runs on
-EXPOSE 8080
+EXPOSE 8081
 
 # Start Tomcat
 CMD ["catalina.sh", "run"]

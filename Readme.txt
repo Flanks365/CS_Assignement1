@@ -47,3 +47,16 @@ CREATE TABLE users (
 	password VARCHAR2(100),
 	role VARCHAR2(36) 
 );
+
+
+Docker container instructions to deploy trivia webapp with Oracle database:
+1. Find the IPV4 of your oracle database (if on local machine, can use ipconfig)
+2. Update String databaseIP in Repository.java found at ROOT/trivia/WEB-INF/classes
+3. Compile Repository.java in existing directory
+4. Download and install Docker
+5. Open a terminal and navigate to ROOT
+6. type the following command
+        $ docker build -t trivia .
+7. Followed by:
+        $ docker run -d -p 8081:8081 trivia
+8. Open browser and go to localhost:8081

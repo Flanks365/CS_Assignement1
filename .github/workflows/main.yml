@@ -24,8 +24,10 @@ jobs:
 
       - name: Compile Java Files in Class Folder
         run: |
-          cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes  # Use relative path to the class folder
-          javac -cp ../apache-tomcat-10.1.28/lib/* *.java  # Compile all Java files
+          cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes
+          # Construct the classpath by iterating over JAR files in the lib directory
+          CLASSPATH=$(find ../apache-tomcat-10.1.28/lib -name '*.jar' | tr '\n' ':')
+          javac -cp "$CLASSPATH" *.java
 
       - name: Start Tomcat Server
         run: |

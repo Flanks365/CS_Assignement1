@@ -45,9 +45,15 @@ jobs:
           # Compile the Java files
           javac -cp "$CLASSPATH" *.java
 
+      - name: Create Logs Directory
+        run: |
+          mkdir -p ./apache-tomcat-10.1.28/logs  # Create the logs directory if it doesn't exist
+
+
       - name: Start Tomcat Server
         run: |
           cd ./apache-tomcat-10.1.28/bin  # Use relative path to the Tomcat bin folder
           chmod +x startup.sh  # Make sure the startup script is executable
           chmod +x catalina.sh  # Ensure catalina.sh is executable
+          set -x  # Enable debugging
           ./catalina.sh start  # Start Tomcat

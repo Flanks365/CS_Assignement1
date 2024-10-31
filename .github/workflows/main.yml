@@ -49,4 +49,5 @@ jobs:
         run: |
           cd ./apache-tomcat-10.1.28/bin  # Use relative path to the Tomcat bin folder
           chmod +x startup.sh  # Make sure the startup script is executable
-          ./startup.sh  # Start Tomcat on Linux
+          chmod +x catalina.sh  # Ensure catalina.sh is executable
+          ./catalina.sh start  # Start Tomcat

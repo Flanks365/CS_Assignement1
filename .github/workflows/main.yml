@@ -40,14 +40,13 @@ jobs:
           ls -al
           
           # Construct the classpath
-          CLASSPATH=.;../../../../lib/*
+          CLASSPATH=.:../../../../lib/*
           
           # Compile the Java files
           javac -cp "$CLASSPATH" *.java
 
-
       - name: Start Tomcat Server
         run: |
           cd ./apache-tomcat-10.1.28/bin  # Use relative path to the Tomcat bin folder
-          ./startup.bat  # Start Tomcat on Linux/Mac
-          # For Windows, you would use startup.bat
+          chmod +x startup.sh  # Make sure the startup script is executable
+          ./startup.sh  # Start Tomcat on Linux

@@ -22,11 +22,15 @@ jobs:
           distribution: 'temurin'
           java-version: '11'  # Use the Java version your project requires
 
-      - name: Compile Java Files in Class Folder
+      - name: Compile Java Files
         run: |
-          cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes
-          # Construct the classpath by iterating over JAR files in the lib directory
-          CLASSPATH=$(find ../apache-tomcat-10.1.28/lib -name '*.jar' | tr '\n' ':')
+          # Change to the directory containing your Java source files
+          cd ./src
+          
+          # Construct the classpath
+          CLASSPATH=$(find ../lib -name '*.jar' | tr '\n' ':')
+          
+          # Compile Java files with the constructed classpath
           javac -cp "$CLASSPATH" *.java
 
       - name: Start Tomcat Server

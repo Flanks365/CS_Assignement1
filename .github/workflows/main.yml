@@ -48,5 +48,5 @@ jobs:
       - name: Start Tomcat Server
         run: |
           cd ./apache-tomcat-10.1.28/bin  # Use relative path to the Tomcat bin folder
-          chmod +x startup.bat  # Make sure the startup script is executable
-          ./startup.bat  # Start Tomcat on Linux
+          chmod +x startup.sh  # Make sure the startup script is executable
+          ./startup.sh  # Start Tomcat on Linux

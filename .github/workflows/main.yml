@@ -1,0 +1,34 @@
+name: CI/CD for Tomcat with Docker
+
+on:
+  push:
+    branches:
+      - main  # Run on pushes to the main branch
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '11'  # Use the Java version your project requires
+
+      - name: Compile Java Files in Class Folder
+        run: |
+          cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes  # Use relative path to the class folder
+          javac -cp ./apache-tomcat-10.1.28/lib/* *.java  # Compile all Java files
+
+      - name: Start Tomcat Server
+        run: |
+          cd ./apache-tomcat-10.1.28/bin  # Use relative path to the Tomcat bin folder
+          ./startup.bat  # Start Tomcat on Linux/Mac
+          # For Windows, you would use startup.bat

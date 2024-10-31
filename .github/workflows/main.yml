@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: '11'  # Use the Java version your project requires
+          java-version: '17'  # Use the Java version your project requires
 
       - name: Compile Java Files
         run: |

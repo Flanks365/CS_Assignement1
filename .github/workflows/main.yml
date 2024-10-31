@@ -25,7 +25,7 @@ jobs:
       - name: Compile Java Files
         run: |
           # Change to the directory containing your Java source files
-          cd ./src
+          cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes
           
           # Construct the classpath
           CLASSPATH=$(find ../lib -name '*.jar' | tr '\n' ':')

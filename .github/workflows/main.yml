@@ -26,13 +26,19 @@ jobs:
         run: |
           # Change to the directory containing your Java source files
           cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes
-
+          
+          # Print the current working directory to verify
           pwd
-
+          
+          # List all files in the directory to ensure Java files are present
           ls -al
           
-          # Compile Java files with the constructed classpath
-          javac -cp .;./apache-tomcat-10.1.28/lib/BCrypt.jar;./apache-tomcat-10.1.28/lib/ojdbc8.jar;./apache-tomcat-10.1.28/lib/servlet-api.jar;./apache-tomcat-10.1.28/lib/gson-2.10.1.jar *.java
+          # Construct the classpath
+          CLASSPATH=./apache-tomcat-10.1.28/lib/BCrypt.jar:./apache-tomcat-10.1.28/lib/ojdbc8.jar:./apache-tomcat-10.1.28/lib/servlet-api.jar:./apache-tomcat-10.1.28/lib/gson-2.10.1.jar
+          
+          # Compile the Java files
+          javac -cp "$CLASSPATH" *.java
+
 
       - name: Start Tomcat Server
         run: |

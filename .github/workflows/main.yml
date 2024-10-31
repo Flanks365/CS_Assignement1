@@ -22,6 +22,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'  # Use the Java version your project requires
 
+      - name: Change Permissions for Java Files
+        run: |
+          # Change permissions for all Java files
+          chmod +x ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes/*.java
+          chmod +x ./apache-tomcat-10.1.28/lib/*
+
       - name: Compile Java Files
         run: |
           # Change to the directory containing your Java source files

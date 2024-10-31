@@ -27,11 +27,8 @@ jobs:
           # Change to the directory containing your Java source files
           cd ./apache-tomcat-10.1.28/webapps/trivia/WEB-INF/classes
           
-          # Construct the classpath
-          CLASSPATH=$(find ../lib -name '*.jar' | tr '\n' ':')
-          
           # Compile Java files with the constructed classpath
-          javac -cp "$CLASSPATH" *.java
+          javac -cp ./apache-tomcat-10.1.28/lib/BCrypt.jar;./apache-tomcat-10.1.28/lib/ojdbc8.jar;./apache-tomcat-10.1.28/lib/servlet-api.jar;./apache-tomcat-10.1.28/lib/gson-2.10.1.jar *.java
 
       - name: Start Tomcat Server
         run: |

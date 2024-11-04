@@ -7,12 +7,20 @@ Setting up and launching webapp instructions:
 6. Type "http://localhost:8081/trivia/login" in your browser to access the website
 7. Enjoy!
 
-Setting up database instructions:
+Installing Oracle database instructions (see next section for Docker instructions):
 1. Download the oracle database if you have not already 
 2. Open and connect to your oracle database
 3. Ensure that your oracle username is "system" and your oracle password is "oracle1"
 4. Execute the commands below to create the tables
 5. Execute the command "commit;" to save your changes
+
+Running Oracle database in Docker container:
+1. Download and install Docker
+2. In a Docker terminal, run the following command to create the container:
+docker run --name oracle-xe -p 1522:1521 -e ORACLE_PASSWORD=oracle1 gvenzl/oracle-xe:11
+3. Run the following command to connect to the database:
+sqlplus system/oracle1@localhost:1522
+
 
 Table creation script:
 
@@ -41,6 +49,7 @@ CREATE TABLE answers (
 	answer_index INT,
         FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
     );
+
 CREATE TABLE users (
 	id RAW(16) PRIMARY KEY, 
 	username VARCHAR2(36), 

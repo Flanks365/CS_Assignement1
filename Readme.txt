@@ -67,5 +67,5 @@ Docker container instructions to deploy trivia webapp with Oracle database:
 6. type the following command
         $ docker build -t trivia .
 7. Followed by:
-        $ docker run -d -p 8081:8081 trivia
-8. Open browser and go to localhost:8081
+        $ docker run -d -p 8081:8080 trivia
+8. Open browser and go to localhost:8081/trivia/login
